@@ -1,13 +1,13 @@
 {
     "name": "jupyterlab_doc_reader_extension",
-    "version": "0.5.34",
+    "version": "0.5.36",
     "description": "Jupyterlab extension that allows reading of the docx documents",
     "keywords": [
         "jupyter",
         "jupyterlab",
         "jupyterlab-extension"
     ],
-    "homepage": "",
+    "homepage": "https://github.com/stellarshenson/jupyterlab_doc_reader_extension.git",
     "bugs": {
         "url": "https://github.com/stellarshenson/jupyterlab_doc_reader_extension/issues"
     },
