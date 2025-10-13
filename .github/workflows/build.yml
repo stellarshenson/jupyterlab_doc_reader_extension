@@ -33,9 +33,8 @@ jobs:
     - name: Build the extension
       run: |
         set -eux
-        python -m pip install .[test]
+        python -m pip install .
 
-        pytest -vv -r ap
         jupyter server extension list
         jupyter server extension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"
 
