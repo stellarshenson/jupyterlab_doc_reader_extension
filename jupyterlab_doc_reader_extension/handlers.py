@@ -17,6 +17,9 @@ try:
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
     from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
     from reportlab.lib import colors
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from html import escape as html_escape
 except ImportError as e:
     Document = None
     _import_error = str(e)
@@ -135,6 +138,33 @@ class DocumentConverterHandler(APIHandler):
             doc = Document(input_path)
             self.log.debug(f"Document loaded. Paragraphs: {len(doc.paragraphs)}, Tables: {len(doc.tables)}")
 
+            # Register Unicode-supporting fonts from system paths
+            # Try common Linux font locations for fonts that support Polish characters
+            font_candidates = [
+                # DejaVu fonts (most common, excellent Unicode support)
+                ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 'UnicodeSans'),
+                ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 'UnicodeSansBold'),
+                # Liberation fonts (alternative)
+                ('/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf', 'UnicodeSans'),
+                ('/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf', 'UnicodeSansBold'),
+                # FreeSans (GNU FreeFont)
+                ('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 'UnicodeSans'),
+                ('/usr/share/fonts/truetype/freefont/FreeSansBold.ttf', 'UnicodeSansBold'),
+            ]
+
+            registered_fonts = set()
+            for font_path, font_name in font_candidates:
+                if os.path.exists(font_path) and font_name not in registered_fonts:
+                    try:
+                        pdfmetrics.registerFont(TTFont(font_name, font_path))
+                        registered_fonts.add(font_name)
+                        self.log.info(f"Registered font {font_name} from {font_path}")
+                    except Exception as font_error:
+                        self.log.debug(f"Failed to register {font_name} from {font_path}: {font_error}")
+
+            if not registered_fonts:
+                self.log.warning("No Unicode fonts found. Polish characters may not display correctly.")
+
             # Create PDF in memory
             pdf_buffer = BytesIO()
             pdf_doc = SimpleDocTemplate(
@@ -149,10 +179,15 @@ class DocumentConverterHandler(APIHandler):
             # Get default styles
             styles = getSampleStyleSheet()
 
-            # Create custom styles for better formatting
+            # Determine which font to use (prefer Unicode fonts if registered)
+            font_name = 'UnicodeSans' if 'UnicodeSans' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
+            font_name_bold = 'UnicodeSansBold' if 'UnicodeSansBold' in pdfmetrics.getRegisteredFontNames() else 'Helvetica-Bold'
+
+            # Create custom styles with better formatting
             normal_style = ParagraphStyle(
                 'CustomNormal',
                 parent=styles['Normal'],
+                fontName=font_name,
                 fontSize=11,
                 leading=14,
                 spaceAfter=12
@@ -161,6 +196,7 @@ class DocumentConverterHandler(APIHandler):
             heading1_style = ParagraphStyle(
                 'CustomHeading1',
                 parent=styles['Heading1'],
+                fontName=font_name_bold,
                 fontSize=18,
                 leading=22,
                 spaceAfter=12,
@@ -171,6 +207,7 @@ class DocumentConverterHandler(APIHandler):
             heading2_style = ParagraphStyle(
                 'CustomHeading2',
                 parent=styles['Heading2'],
+                fontName=font_name_bold,
                 fontSize=14,
                 leading=18,
                 spaceAfter=10,
@@ -214,8 +251,10 @@ class DocumentConverterHandler(APIHandler):
                         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTNAME', (0, 0), (-1, 0), font_name_bold),
+                        ('FONTNAME', (0, 1), (-1, -1), font_name),
                         ('FONTSIZE', (0, 0), (-1, 0), 12),
+                        ('FONTSIZE', (0, 1), (-1, -1), 10),
                         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                         ('GRID', (0, 0), (-1, -1), 1, colors.black)

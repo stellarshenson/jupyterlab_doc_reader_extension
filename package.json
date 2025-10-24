@@ -1,6 +1,6 @@
 {
     "name": "jupyterlab_doc_reader_extension",
-    "version": "0.5.36",
+    "version": "0.5.39",
     "description": "Jupyterlab extension that allows reading of the docx documents",
     "keywords": [
         "jupyter",
