@@ -36,6 +36,8 @@ uninstall:
 
 ## publish package to public repository
 publish: install
+	npm run build:prod
+	npm publish --access public
 	twine upload dist/*
 
 ## install all required build dependencies
