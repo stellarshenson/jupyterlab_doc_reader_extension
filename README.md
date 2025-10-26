@@ -1,6 +1,8 @@
 # JupyterLab Document Reader Extension
 
-[![PyPI version](https://badge.fury.io/py/jupyterlab-doc-reader-extension.svg)](https://badge.fury.io/py/jupyterlab-doc-reader-extension)
+![GitHub Actions](https://github.com/stellarshenson/jupyterlab_doc_reader_extension/actions/workflows/build.yml/badge.svg)
+[![npm version](https://badge.fury.io/js/jupyterlab_doc_reader_extension.svg)](https://www.npmjs.com/package/jupyterlab_doc_reader_extension)
+[![PyPI version](https://badge.fury.io/py/jupyterlab-doc-reader-extension.svg)](https://pypi.org/project/jupyterlab-doc-reader-extension/)
 
 A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC) and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
 
@@ -12,13 +14,14 @@ A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC) 
 - View DOCX, DOC, and RTF files directly in JupyterLab
 - Automatic conversion to PDF for display (no temporary files created in your workspace)
 - Native PDF rendering in the browser
+- Unicode support with automatic font detection for international characters (Polish, German, French, etc.)
 - Read-only mode to prevent accidental modifications
 - Clean, integrated interface matching JupyterLab's design
 
 ## Architecture
 
 This extension consists of:
-- **Python server extension**: Handles document-to-PDF conversion using pure Python libraries (mammoth + weasyprint)
+- **Python server extension**: Handles document-to-PDF conversion using pure Python libraries (python-docx + reportlab)
 - **TypeScript frontend extension**: Provides the document viewer widget and file type registration
 
 ## Requirements
@@ -35,7 +38,7 @@ Simply install the extension with pip:
 pip install jupyterlab_doc_reader_extension
 ```
 
-All required Python dependencies (mammoth, weasyprint) will be installed automatically.
+All required Python dependencies (python-docx, reportlab) will be installed automatically.
 
 ## Usage
 
