@@ -5,3 +5,6 @@
 
 2. **Task - Polish Character Support**: Fix rendering of Polish characters (ą, ć, ę, ł, ń, ó, ś, ź, ż) in generated PDFs<br>
     **Result**: Implemented robust Unicode font detection that searches common Linux system paths for TrueType fonts. Extension now tries DejaVu, Liberation, and FreeSans fonts from system locations. Registers found fonts as 'UnicodeSans' and 'UnicodeSansBold' with proper logging. Falls back to Helvetica if no Unicode fonts available. Polish characters now render correctly instead of displaying as box symbols.
+
+3. **Task - CI/CD and Publishing**: Fix GitHub Actions workflow and publish extension to npm and PyPI<br>
+    **Result**: Fixed vega-dataflow dependency resolution issue by adding resolutions field to package.json. Fixed CI build workflow by adding build step before tests. Updated README with GitHub Actions, npm, and PyPI badges following GITHUB.md guidelines. Corrected documentation to reflect actual dependencies (python-docx and reportlab instead of mammoth and weasyprint). Added Unicode support feature to README. Configured npm authentication and successfully published to npm registry. Updated Makefile to include npm publish in publish target for synchronized releases. Extension now fully discoverable in JupyterLab Extension Manager. Published version 0.5.41 to both npm and PyPI.
