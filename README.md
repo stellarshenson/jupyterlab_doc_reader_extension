@@ -4,6 +4,7 @@
 [![npm version](https://badge.fury.io/js/jupyterlab_doc_reader_extension.svg)](https://www.npmjs.com/package/jupyterlab_doc_reader_extension)
 [![PyPI version](https://badge.fury.io/py/jupyterlab-doc-reader-extension.svg)](https://pypi.org/project/jupyterlab-doc-reader-extension/)
 ![PyPI downloads](https://img.shields.io/pypi/dm/jupyterlab-doc-reader-extension?label=PyPI%20downloads)
+![JL4 Ready](https://img.shields.io/badge/Jupyterlab%204-ready-blue)
 
 A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC) and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
 
