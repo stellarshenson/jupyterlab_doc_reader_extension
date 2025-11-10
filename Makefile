@@ -1,8 +1,8 @@
-# Makefile for Jupyterlab extensions version 1.24
+# Makefile for Jupyterlab extensions version 1.25
 # author: Stellars Henson <konrad.jelen@gmail.com
 # License: MIT Open Source License
 
-.PHONY: build install clean uninstall publish dependencies mrproper increment_version install_dependencies check_dependencies help
+.PHONY: build install clean uninstall publish dependencies mrproper increment_version install_dependencies check_dependencies upgrade help
 .DEFAULT_GOAL := help
 
 # Read current version from package.json (only if node is available)
@@ -64,6 +64,12 @@ install_dependencies:
 	conda install -y nodejs yarn --update-all
 	pip install twine
 	npm install rimraf
+
+## upgrade all npm and yarn dependencies
+upgrade: check_dependencies
+	npm update
+	yarn install
+	yarn upgrade
 
 ## cleanup all build and metabuild artefacts
 mrproper: clean uninstall
