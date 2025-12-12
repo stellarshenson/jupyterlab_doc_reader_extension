@@ -1,10 +1,10 @@
 # JupyterLab Document Reader Extension
 
-![GitHub Actions](https://github.com/stellarshenson/jupyterlab_doc_reader_extension/actions/workflows/build.yml/badge.svg)
-[![npm version](https://badge.fury.io/js/jupyterlab_doc_reader_extension.svg)](https://www.npmjs.com/package/jupyterlab_doc_reader_extension)
-[![PyPI version](https://badge.fury.io/py/jupyterlab-doc-reader-extension.svg)](https://pypi.org/project/jupyterlab-doc-reader-extension/)
+[![GitHub Actions](https://github.com/stellarshenson/jupyterlab_doc_reader_extension/actions/workflows/build.yml/badge.svg)](https://github.com/stellarshenson/jupyterlab_doc_reader_extension/actions/workflows/build.yml)
+[![npm version](https://img.shields.io/npm/v/jupyterlab_doc_reader_extension.svg)](https://www.npmjs.com/package/jupyterlab_doc_reader_extension)
+[![PyPI version](https://img.shields.io/pypi/v/jupyterlab-doc-reader-extension.svg)](https://pypi.org/project/jupyterlab-doc-reader-extension/)
 [![Total PyPI downloads](https://static.pepy.tech/badge/jupyterlab-doc-reader-extension)](https://pepy.tech/project/jupyterlab-doc-reader-extension)
-![JL4 Ready](https://img.shields.io/badge/Jupyterlab%204-ready-blue)
+[![JupyterLab 4](https://img.shields.io/badge/JupyterLab-4-orange.svg)](https://jupyterlab.readthedocs.io/en/stable/)
 
 A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC), PowerPoint presentations (PPTX, PPT), and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
 
