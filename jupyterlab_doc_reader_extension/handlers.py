@@ -9,8 +9,8 @@ from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
 import tornado
 
+# Reportlab imports (required for both DOCX and PPTX conversion)
 try:
-    from docx import Document
     from reportlab.lib.pagesizes import letter
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch, Emu
@@ -20,6 +20,14 @@ try:
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
     from reportlab.pdfgen import canvas
+    REPORTLAB_AVAILABLE = True
+except ImportError as e:
+    REPORTLAB_AVAILABLE = False
+    _reportlab_import_error = str(e)
+
+# python-docx for DOCX conversion
+try:
+    from docx import Document
     from html import escape as html_escape
     DOCX_AVAILABLE = True
 except ImportError as e:
@@ -27,6 +35,7 @@ except ImportError as e:
     DOCX_AVAILABLE = False
     _docx_import_error = str(e)
 
+# python-pptx for PPTX conversion
 try:
     from pptx import Presentation
     from pptx.util import Inches, Pt, Emu as PptxEmu
@@ -38,6 +47,7 @@ except ImportError as e:
     PPTX_AVAILABLE = False
     _pptx_import_error = str(e)
 
+# Pillow for image handling
 try:
     from PIL import Image as PILImage
     PIL_AVAILABLE = True
@@ -162,10 +172,15 @@ class DocumentConverterHandler(APIHandler):
         """
         Convert DOCX document to PDF using python-docx + reportlab.
         """
+        if not REPORTLAB_AVAILABLE:
+            raise Exception(
+                f"Required library reportlab not installed: {_reportlab_import_error}\n"
+                "Please install: pip install reportlab"
+            )
         if not DOCX_AVAILABLE:
             raise Exception(
-                f"Required libraries not installed: {_docx_import_error}\n"
-                "Please install: pip install python-docx reportlab"
+                f"Required library python-docx not installed: {_docx_import_error}\n"
+                "Please install: pip install python-docx"
             )
 
         try:
@@ -320,9 +335,14 @@ class DocumentConverterHandler(APIHandler):
         Convert PPTX presentation to PDF using python-pptx + reportlab.
         Renders each slide as a PDF page with text, shapes, and images.
         """
+        if not REPORTLAB_AVAILABLE:
+            raise Exception(
+                f"Required library reportlab not installed: {_reportlab_import_error}\n"
+                "Please install: pip install reportlab"
+            )
         if not PPTX_AVAILABLE:
             raise Exception(
-                f"Required libraries not installed: {_pptx_import_error}\n"
+                f"Required library python-pptx not installed: {_pptx_import_error}\n"
                 "Please install: pip install python-pptx"
             )
 
