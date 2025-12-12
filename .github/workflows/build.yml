@@ -31,6 +31,12 @@ jobs:
         jlpm run build
         jlpm run test
 
+    - name: Run Python unit tests
+      run: |
+        set -eux
+        pip install pytest python-pptx python-docx reportlab Pillow
+        python -m pytest jupyterlab_doc_reader_extension/tests/ -v --tb=short
+
     - name: Build the extension
       run: |
         set -eux
