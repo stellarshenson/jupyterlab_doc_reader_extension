@@ -34,6 +34,24 @@ const FILE_TYPES = [
     mimeTypes: ['application/rtf', 'text/rtf'],
     contentType: 'file',
     fileFormat: 'base64'
+  },
+  {
+    name: 'pptx',
+    displayName: 'PowerPoint Presentation (PPTX)',
+    extensions: ['.pptx'],
+    mimeTypes: [
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ],
+    contentType: 'file',
+    fileFormat: 'base64'
+  },
+  {
+    name: 'ppt',
+    displayName: 'PowerPoint Presentation (PPT)',
+    extensions: ['.ppt'],
+    mimeTypes: ['application/vnd.ms-powerpoint'],
+    contentType: 'file',
+    fileFormat: 'base64'
   }
 ];
 

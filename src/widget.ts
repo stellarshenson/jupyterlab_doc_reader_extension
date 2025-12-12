@@ -5,7 +5,7 @@ import { Widget } from '@lumino/widgets';
 import { requestAPI } from './handler';
 
 /**
- * A widget for displaying document files (DOCX, DOC, RTF) as PDFs
+ * A widget for displaying document files (DOCX, DOC, RTF, PPTX, PPT) as PDFs
  */
 export class DocReaderWidget extends Widget {
   private _context: DocumentRegistry.Context;
@@ -236,12 +236,12 @@ export class DocReaderWidget extends Widget {
         <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 4px;">
           <strong>Troubleshooting:</strong>
           <ul style="margin: 10px 0; padding-left: 20px;">
-            <li>Check that mammoth and weasyprint are installed: <code>pip list | grep -E "mammoth|weasyprint"</code></li>
+            <li>Check that required libraries are installed: <code>pip list | grep -E "python-docx|python-pptx|reportlab|Pillow"</code></li>
             <li>Verify the extension is properly installed: <code>jupyter server extension list</code></li>
-            <li>Check the file is a valid DOCX, DOC, or RTF document</li>
+            <li>Check the file is a valid DOCX, DOC, RTF, PPTX, or PPT document</li>
             <li>Ensure the file is not corrupted or password-protected</li>
-            <li>For legacy DOC files, consider converting to DOCX format</li>
-            <li>Check JupyterLab logs for more details: <code>/var/log/jupyterlab.log</code></li>
+            <li>For legacy DOC/PPT files, consider converting to DOCX/PPTX format</li>
+            <li>Check JupyterLab server logs for more details</li>
           </ul>
         </div>
       </div>

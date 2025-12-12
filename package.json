@@ -1,7 +1,7 @@
 {
     "name": "jupyterlab_doc_reader_extension",
-    "version": "1.0.4",
-    "description": "Jupyterlab extension that allows reading of the docx documents",
+    "version": "1.1.4",
+    "description": "JupyterLab extension that allows reading of DOCX, PPTX, and RTF documents",
     "keywords": [
         "jupyter",
         "jupyterlab",
@@ -82,7 +82,7 @@
         "mkdirp": "^1.0.3",
         "npm-run-all2": "^7.0.1",
         "prettier": "^3.0.0",
-        "rimraf": "^5.0.1",
+        "rimraf": "^5.0.10",
         "source-map-loader": "^1.0.2",
         "style-loader": "^3.3.1",
         "stylelint": "^15.10.1",

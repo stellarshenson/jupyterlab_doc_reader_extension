@@ -6,16 +6,17 @@
 [![Total PyPI downloads](https://static.pepy.tech/badge/jupyterlab-doc-reader-extension)](https://pepy.tech/project/jupyterlab-doc-reader-extension)
 ![JL4 Ready](https://img.shields.io/badge/Jupyterlab%204-ready-blue)
 
-A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC) and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
+A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC), PowerPoint presentations (PPTX, PPT), and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
 
 
 ![](./.resources/screenshot_1.png)
 
 ## Features
 
-- View DOCX, DOC, and RTF files directly in JupyterLab
+- View DOCX, DOC, RTF, PPTX, and PPT files directly in JupyterLab
 - Automatic conversion to PDF for display (no temporary files created in your workspace)
 - Native PDF rendering in the browser
+- PowerPoint support with text, images, and tables rendered from slides
 - Unicode support with automatic font detection for international characters (Polish, German, French, etc.)
 - Read-only mode to prevent accidental modifications
 - Clean, integrated interface matching JupyterLab's design
@@ -23,7 +24,7 @@ A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC) 
 ## Architecture
 
 This extension consists of:
-- **Python server extension**: Handles document-to-PDF conversion using pure Python libraries (python-docx + reportlab)
+- **Python server extension**: Handles document-to-PDF conversion using pure Python libraries (python-docx, python-pptx, reportlab, Pillow)
 - **TypeScript frontend extension**: Provides the document viewer widget and file type registration
 
 ## Requirements
@@ -40,11 +41,11 @@ Simply install the extension with pip:
 pip install jupyterlab_doc_reader_extension
 ```
 
-All required Python dependencies (python-docx, reportlab) will be installed automatically.
+All required Python dependencies (python-docx, python-pptx, reportlab, Pillow) will be installed automatically.
 
 ## Usage
 
-Once installed, simply click on any `.docx`, `.doc`, or `.rtf` file in the JupyterLab file browser. The extension will automatically:
+Once installed, simply click on any `.docx`, `.doc`, `.rtf`, `.pptx`, or `.ppt` file in the JupyterLab file browser. The extension will automatically:
 1. Convert the document to PDF on the server
 2. Stream the PDF to your browser
 3. Display it in a dedicated viewer tab
