@@ -8,7 +8,6 @@
 
 A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC), PowerPoint presentations (PPTX, PPT), and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
 
-
 ![](./.resources/screenshot_1.png)
 
 ## Features
@@ -24,6 +23,7 @@ A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC),
 ## Architecture
 
 This extension consists of:
+
 - **Python server extension**: Handles document-to-PDF conversion using pure Python libraries (python-docx, python-pptx, reportlab, Pillow)
 - **TypeScript frontend extension**: Provides the document viewer widget and file type registration
 
@@ -46,6 +46,7 @@ All required Python dependencies (python-docx, python-pptx, reportlab, Pillow) w
 ## Usage
 
 Once installed, simply click on any `.docx`, `.doc`, `.rtf`, `.pptx`, or `.ppt` file in the JupyterLab file browser. The extension will automatically:
+
 1. Convert the document to PDF on the server
 2. Stream the PDF to your browser
 3. Display it in a dedicated viewer tab

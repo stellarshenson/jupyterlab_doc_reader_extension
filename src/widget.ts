@@ -134,7 +134,10 @@ export class DocReaderWidget extends Widget {
         console.log('[DocReader] Document loading complete');
       } else {
         // Response indicates failure
-        console.error('[DocReader] Response missing success or pdf_data:', response);
+        console.error(
+          '[DocReader] Response missing success or pdf_data:',
+          response
+        );
         throw response;
       }
     } catch (error) {

@@ -10,6 +10,7 @@ This file extends workspace-level configuration with project-specific rules.
 JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich Text Format (RTF) files directly in JupyterLab. Converts documents to PDF on-the-fly using pure Python libraries.
 
 **Technology Stack**:
+
 - Frontend: TypeScript, JupyterLab 4 extension API, Lumino widgets
 - Backend: Python server extension, python-docx, reportlab
 - Build: jlpm (Jupyter's yarn), webpack via @jupyterlab/builder
@@ -17,6 +18,7 @@ JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich
 - CI/CD: GitHub Actions, npm, PyPI
 
 **Package Names**:
+
 - npm: `jupyterlab_doc_reader_extension`
 - PyPI: `jupyterlab-doc-reader-extension`
 - GitHub: `stellarshenson/jupyterlab_doc_reader_extension`
@@ -31,15 +33,18 @@ JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich
 ## Context Persistence
 
 **MANDATORY FIRST STEP**: At the start of EVERY session, you MUST:
+
 1. Read `.claude/JOURNAL.md` (if it exists) before responding to any user query
 2. Acknowledge what previous work was done based on the journal
 3. Ask the user how to proceed based on that context
 
 **MANDATORY AFTER EVERY TASK**: After completing substantive work, you MUST:
+
 1. Update `.claude/JOURNAL.md` with the entry
 2. Confirm to the user that the journal was updated
 
 **Journal Entry Rules**:
+
 - ONLY log substantive work on documents, diagrams, or documentation content
 - DO NOT log: git commits, git pushes, file cleanup, maintenance tasks, or conversational queries
 - Index entries incrementally: '1', '2', etc.
@@ -47,6 +52,7 @@ JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich
 - Merge related consecutive entries when natural
 
 **Format** (include version number):
+
 ```
 <number>. **Task - <short 3-5 word depiction>** (v1.2.3): task description / query description / summary<br>
     **Result**: summary of the work done
@@ -72,15 +78,15 @@ JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich
 - Narrative focuses on value proposition, concrete benefits, and implementation details
 - Include brief introductions but avoid fluff
 - Explicitly state caveats and limitations where relevant
-- Do not use em-dashes, use hyphens with spaces (` - `) instead
+- Do not use em-dashes, use hyphens with spaces (`-`) instead
 - Do not use full stop after a bullet point
 - For mermaid diagrams use standard colours and not overloaded complex content
-    - Use standard colours, no custom styles
-    - Use diagrams to illustrate complex processes, workflows, or architectures
-    - Do not overload diagrams with details, provide text narrative above or below
-    - Do not use images and emojis
-    - Only type of styling allowed: stroke and stroke-width for graph elements
-    - **DO NOT use** `%%{init: {'theme':'neutral'}}%%` as it obscures colours in dark mode
+  - Use standard colours, no custom styles
+  - Use diagrams to illustrate complex processes, workflows, or architectures
+  - Do not overload diagrams with details, provide text narrative above or below
+  - Do not use images and emojis
+  - Only type of styling allowed: stroke and stroke-width for graph elements
+  - **DO NOT use** `%%{init: {'theme':'neutral'}}%%` as it obscures colours in dark mode
 
 ## Documentation Standards
 
@@ -105,6 +111,7 @@ JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich
 ## GitHub Project Instructions
 
 **Badge Template** (shields.io style):
+
 ```markdown
 [![GitHub Actions](https://github.com/stellarshenson/jupyterlab_doc_reader_extension/actions/workflows/build.yml/badge.svg)](https://github.com/stellarshenson/jupyterlab_doc_reader_extension/actions/workflows/build.yml)
 [![npm version](https://img.shields.io/npm/v/jupyterlab_doc_reader_extension.svg)](https://www.npmjs.com/package/jupyterlab_doc_reader_extension)
@@ -115,8 +122,9 @@ JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich
 
 **Link Checker Configuration**:
 When using `jupyterlab/maintainer-tools/.github/actions/check-links@v1`, configure `ignore_links` parameter to skip badge URLs:
+
 ```yaml
 - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
   with:
-    ignore_links: "https://www.npmjs.com/package/.* https://pepy.tech/.* https://static.pepy.tech/.*"
+    ignore_links: 'https://www.npmjs.com/package/.* https://pepy.tech/.* https://static.pepy.tech/.*'
 ```
