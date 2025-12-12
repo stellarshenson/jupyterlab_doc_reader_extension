@@ -14,3 +14,9 @@
 
 5. **Task - Unit Tests for Conversion** (v1.1.6): Write comprehensive unit tests for PPTX and DOCX conversion<br>
    **Result**: Created `jupyterlab_doc_reader_extension/tests/test_handlers.py` with 18 pytest tests covering PPTX conversion (loads correctly, has slide dimensions, produces PDF, handles multiple slides), DOCX conversion (loads correctly, produces PDF), file type routing (unsupported PPT/DOC/RTF/unknown formats raise appropriate errors), Unicode font registration (method exists, runs without error), import availability (reportlab, docx, pptx, PIL all available), and PDF generation (simple PDF, PDF with colors). Used `unittest.mock.patch` with `PropertyMock` to mock the Jupyter handler's `log` property. Updated `src/__tests__/jupyterlab_doc_reader_extension.spec.ts` Jest tests with 8 tests for base64 conversion, HTML escaping, and file extension detection. Total 26 tests (18 Python + 8 Jest) all passing.
+
+6. **Task - CI Python Tests Fix** (v1.1.6): Fix GitHub Actions CI to run Python unit tests without pytest_jupyter dependency<br>
+   **Result**: Added Python unit test step to `.github/workflows/build.yml` that installs pytest and conversion dependencies (python-pptx, python-docx, reportlab, Pillow) then runs pytest. Fixed `ModuleNotFoundError: No module named 'pytest_jupyter'` by adding `--confcutdir=jupyterlab_doc_reader_extension/tests` option to prevent pytest from loading root conftest.py which requires pytest_jupyter for integration tests. Unit tests now run independently in CI without needing the full JupyterLab test infrastructure.
+
+7. **Task - Publish v1.1.7** (v1.1.7): Publish extension with PPTX support and unit tests to npm and PyPI<br>
+   **Result**: Published version 1.1.7 to npm and PyPI registries using `make publish`. This release includes PowerPoint PPTX viewing support, 26 unit tests (18 Python + 8 Jest), and CI configuration for running Python tests.
