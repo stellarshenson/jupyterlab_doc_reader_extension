@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="8" failures="0" errors="0" time="1.748">
+  <testsuite name="jupyterlab_doc_reader_extension" errors="0" failures="0" skipped="0" timestamp="2025-12-12T09:38:40" time="0.857" tests="8">
+    <testcase classname="jupyterlab_doc_reader_extension should be tested" name="jupyterlab_doc_reader_extension should be tested" time="0.002">
+    </testcase>
+    <testcase classname="base64 conversion should correctly decode base64 to bytes" name="base64 conversion should correctly decode base64 to bytes" time="0.001">
+    </testcase>
+    <testcase classname="base64 conversion should create blob with correct type" name="base64 conversion should create blob with correct type" time="0">
+    </testcase>
+    <testcase classname="HTML escaping should escape HTML special characters" name="HTML escaping should escape HTML special characters" time="0.002">
+    </testcase>
+    <testcase classname="file extension detection should identify PPTX files" name="file extension detection should identify PPTX files" time="0">
+    </testcase>
+    <testcase classname="file extension detection should identify DOCX files" name="file extension detection should identify DOCX files" time="0.001">
+    </testcase>
+    <testcase classname="file extension detection should identify RTF files" name="file extension detection should identify RTF files" time="0">
+    </testcase>
+    <testcase classname="file extension detection should handle uppercase extensions" name="file extension detection should handle uppercase extensions" time="0">
+    </testcase>
+  </testsuite>
+</testsuites>
