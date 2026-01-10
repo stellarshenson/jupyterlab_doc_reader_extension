@@ -171,6 +171,7 @@ class DocumentConverterHandler(APIHandler):
     def _convert_docx_to_pdf(self, input_path: str) -> bytes:
         """
         Convert DOCX document to PDF using python-docx + reportlab.
+        Preserves document structure: inline tables, bold/italic, lists, images.
         """
         if not REPORTLAB_AVAILABLE:
             raise Exception(
@@ -184,46 +185,28 @@ class DocumentConverterHandler(APIHandler):
             )
 
         try:
+            # Import docx internals for document order iteration
+            from docx.text.paragraph import Paragraph as DocxParagraph
+            from docx.table import Table as DocxTable
+            from docx.oxml.ns import qn
+            import io
+
             # Read the DOCX file
             doc = Document(input_path)
             self.log.debug(f"Document loaded. Paragraphs: {len(doc.paragraphs)}, Tables: {len(doc.tables)}")
 
-            # Register Unicode-supporting fonts from system paths
-            # Try common Linux font locations for fonts that support Polish characters
-            font_candidates = [
-                # DejaVu fonts (most common, excellent Unicode support)
-                ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 'UnicodeSans'),
-                ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 'UnicodeSansBold'),
-                # Liberation fonts (alternative)
-                ('/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf', 'UnicodeSans'),
-                ('/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf', 'UnicodeSansBold'),
-                # FreeSans (GNU FreeFont)
-                ('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 'UnicodeSans'),
-                ('/usr/share/fonts/truetype/freefont/FreeSansBold.ttf', 'UnicodeSansBold'),
-            ]
-
-            registered_fonts = set()
-            for font_path, font_name in font_candidates:
-                if os.path.exists(font_path) and font_name not in registered_fonts:
-                    try:
-                        pdfmetrics.registerFont(TTFont(font_name, font_path))
-                        registered_fonts.add(font_name)
-                        self.log.info(f"Registered font {font_name} from {font_path}")
-                    except Exception as font_error:
-                        self.log.debug(f"Failed to register {font_name} from {font_path}: {font_error}")
-
-            if not registered_fonts:
-                self.log.warning("No Unicode fonts found. Polish characters may not display correctly.")
+            # Register Unicode fonts
+            self._register_unicode_fonts()
 
             # Create PDF in memory
             pdf_buffer = BytesIO()
             pdf_doc = SimpleDocTemplate(
                 pdf_buffer,
                 pagesize=letter,
-                rightMargin=72,
-                leftMargin=72,
-                topMargin=72,
-                bottomMargin=72
+                rightMargin=36,
+                leftMargin=36,
+                topMargin=36,
+                bottomMargin=36
             )
 
             # Get default styles
@@ -233,86 +216,430 @@ class DocumentConverterHandler(APIHandler):
             font_name = 'UnicodeSans' if 'UnicodeSans' in pdfmetrics.getRegisteredFontNames() else 'Helvetica'
             font_name_bold = 'UnicodeSansBold' if 'UnicodeSansBold' in pdfmetrics.getRegisteredFontNames() else 'Helvetica-Bold'
 
-            # Create custom styles with better formatting
+            # Create custom styles matching document structure
             normal_style = ParagraphStyle(
                 'CustomNormal',
                 parent=styles['Normal'],
                 fontName=font_name,
-                fontSize=11,
-                leading=14,
-                spaceAfter=12
+                fontSize=10,
+                leading=12,
+                spaceAfter=6
+            )
+
+            # List styles with proper indentation
+            list_bullet_style = ParagraphStyle(
+                'CustomListBullet',
+                parent=styles['Normal'],
+                fontName=font_name,
+                fontSize=10,
+                leading=12,
+                spaceAfter=3,
+                leftIndent=18,
+                bulletIndent=6
+            )
+
+            list_bullet_2_style = ParagraphStyle(
+                'CustomListBullet2',
+                parent=styles['Normal'],
+                fontName=font_name,
+                fontSize=10,
+                leading=12,
+                spaceAfter=3,
+                leftIndent=36,
+                bulletIndent=24
+            )
+
+            list_number_style = ParagraphStyle(
+                'CustomListNumber',
+                parent=styles['Normal'],
+                fontName=font_name,
+                fontSize=10,
+                leading=12,
+                spaceAfter=3,
+                leftIndent=18,
+                bulletIndent=6
+            )
+
+            list_number_2_style = ParagraphStyle(
+                'CustomListNumber2',
+                parent=styles['Normal'],
+                fontName=font_name,
+                fontSize=10,
+                leading=12,
+                spaceAfter=3,
+                leftIndent=36,
+                bulletIndent=24
             )
 
             heading1_style = ParagraphStyle(
                 'CustomHeading1',
                 parent=styles['Heading1'],
                 fontName=font_name_bold,
-                fontSize=18,
-                leading=22,
-                spaceAfter=12,
-                spaceBefore=12,
-                textColor=colors.HexColor('#2E3440')
+                fontSize=14,
+                leading=18,
+                spaceAfter=6,
+                spaceBefore=10,
+                textColor=colors.HexColor('#365F91')
             )
 
             heading2_style = ParagraphStyle(
                 'CustomHeading2',
                 parent=styles['Heading2'],
                 fontName=font_name_bold,
-                fontSize=14,
-                leading=18,
-                spaceAfter=10,
-                spaceBefore=10,
-                textColor=colors.HexColor('#3B4252')
+                fontSize=12,
+                leading=15,
+                spaceAfter=4,
+                spaceBefore=8,
+                textColor=colors.HexColor('#4F81BD')
             )
 
-            # Build the story (content)
+            heading3_style = ParagraphStyle(
+                'CustomHeading3',
+                parent=styles['Heading3'],
+                fontName=font_name_bold,
+                fontSize=11,
+                leading=14,
+                spaceAfter=3,
+                spaceBefore=6,
+                textColor=colors.HexColor('#4F81BD')
+            )
+
+            # Code/monospace style for inline code and filenames
+            font_name_mono = 'Courier'
+            code_style = ParagraphStyle(
+                'CustomCode',
+                parent=styles['Normal'],
+                fontName=font_name_mono,
+                fontSize=9,
+                leading=11,
+                spaceAfter=4,
+                backColor=colors.HexColor('#f5f5f5'),
+                leftIndent=6,
+                rightIndent=6
+            )
+
+            # Build the story (content) - iterate body elements in document order
             story = []
-            paragraph_count = 0
-            non_empty_paragraphs = 0
 
-            for paragraph in doc.paragraphs:
-                paragraph_count += 1
-                if paragraph.text.strip():
-                    non_empty_paragraphs += 1
-                    # Detect heading styles
-                    if paragraph.style.name.startswith('Heading 1'):
-                        story.append(Paragraph(paragraph.text, heading1_style))
-                    elif paragraph.style.name.startswith('Heading'):
-                        story.append(Paragraph(paragraph.text, heading2_style))
-                    else:
-                        story.append(Paragraph(paragraph.text, normal_style))
+            def get_list_info(para):
+                """Get list type and level from paragraph style and indentation."""
+                style_name = para.style.name if para.style else ''
+
+                # Determine list type from style name
+                list_type = None
+                if 'List Number' in style_name:
+                    list_type = 'number'
+                elif 'List Bullet' in style_name:
+                    list_type = 'bullet'
+                elif 'List' in style_name:
+                    list_type = 'bullet'
+
+                if list_type is None:
+                    # Check numPr for lists without explicit style
+                    try:
+                        if para._element.pPr is not None and para._element.pPr.numPr is not None:
+                            list_type = 'bullet'
+                    except AttributeError:
+                        pass
+
+                if list_type is None:
+                    return (None, 0)
+
+                # Determine level from style name (List Number 2, List Bullet 2)
+                if '2' in style_name or '3' in style_name:
+                    level = 1
                 else:
-                    story.append(Spacer(1, 0.2*inch))
+                    # Check leftIndent for nesting level
+                    level = 0
+                    try:
+                        pPr = para._element.pPr
+                        if pPr is not None:
+                            ind = pPr.find(qn('w:ind'))
+                            if ind is not None:
+                                left_val = ind.get(qn('w:left'))
+                                if left_val:
+                                    left_indent = int(left_val)
+                                    # 720 twips = level 0, 1440+ = level 1+
+                                    if left_indent > 720:
+                                        level = 1
+                    except (AttributeError, ValueError):
+                        pass
 
-            self.log.debug(f"Processed {paragraph_count} paragraphs ({non_empty_paragraphs} non-empty)")
+                return (list_type, level)
 
-            # Handle tables
-            table_count = 0
-            for table in doc.tables:
+            # Track numbering for ordered lists
+            number_counters = {0: 0, 1: 0, 2: 0}
+            last_list_level = -1
+
+            def is_code_run(run):
+                """Check if a run has code/monospace styling."""
+                try:
+                    # Check style name for code indicators
+                    if run.style and run.style.name:
+                        style_name = run.style.name.lower()
+                        if any(kw in style_name for kw in ['code', 'verbatim', 'mono', 'console']):
+                            return True
+
+                    # Check font name for monospace fonts
+                    if run.font and run.font.name:
+                        font_name_lower = run.font.name.lower()
+                        if any(kw in font_name_lower for kw in ['courier', 'consolas', 'mono', 'code']):
+                            return True
+
+                    # Check XML for rFonts element with monospace font
+                    rPr = run._element.rPr
+                    if rPr is not None:
+                        rFonts = rPr.find(qn('w:rFonts'))
+                        if rFonts is not None:
+                            ascii_font = rFonts.get(qn('w:ascii'))
+                            if ascii_font:
+                                font_lower = ascii_font.lower()
+                                if any(kw in font_lower for kw in ['courier', 'consolas', 'mono', 'code']):
+                                    return True
+                except (AttributeError, TypeError):
+                    pass
+                return False
+
+            def is_horizontal_rule(para):
+                """Check if paragraph represents a horizontal divider line."""
+                try:
+                    # Check for paragraph border (horizontal line)
+                    pPr = para._element.pPr
+                    if pPr is not None:
+                        pBdr = pPr.find(qn('w:pBdr'))
+                        if pBdr is not None:
+                            # Check for bottom border which creates a horizontal line
+                            bottom = pBdr.find(qn('w:bottom'))
+                            top = pBdr.find(qn('w:top'))
+                            if bottom is not None or top is not None:
+                                # If paragraph is empty or just whitespace, it's a divider
+                                if not para.text.strip():
+                                    return True
+                except (AttributeError, TypeError):
+                    pass
+                return False
+
+            def process_paragraph(para):
+                """Process a single paragraph and return reportlab element(s)."""
+                nonlocal last_list_level
+
+                # Check for horizontal rule/divider first
+                if is_horizontal_rule(para):
+                    from reportlab.platypus import HRFlowable
+                    return [HRFlowable(width="100%", thickness=0.5, color=colors.grey, spaceBefore=3, spaceAfter=6)]
+
+                text = para.text.strip()
+                if not text:
+                    # Empty paragraph - use line-height spacing for proper separation
+                    return Spacer(1, 0.15 * inch)
+
+                # Escape XML special characters for base text and convert newlines
+                text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                text = text.replace('\n', '<br/>')
+
+                # Process all runs with their formatting
+                def format_run(run):
+                    """Format a single run with all its styling."""
+                    run_text = run.text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    if not run_text:
+                        return run_text
+
+                    # Convert newlines to HTML line breaks for reportlab
+                    run_text = run_text.replace('\n', '<br/>')
+
+                    result = run_text
+
+                    # Check for code/monospace first (takes precedence)
+                    if is_code_run(run):
+                        result = f'<font face="Courier" size="9">{result}</font>'
+                        return result
+
+                    # Apply formatting tags (can be combined)
+                    if run.bold:
+                        result = f'<b>{result}</b>'
+                    if run.italic:
+                        result = f'<i>{result}</i>'
+                    if run.underline:
+                        result = f'<u>{result}</u>'
+                    if run.font.strike:
+                        result = f'<strike>{result}</strike>'
+                    if run.font.subscript:
+                        result = f'<sub>{result}</sub>'
+                    if run.font.superscript:
+                        result = f'<super>{result}</super>'
+
+                    # Check for text color
+                    try:
+                        if run.font.color and run.font.color.rgb:
+                            color_hex = str(run.font.color.rgb)
+                            if color_hex and color_hex != 'None' and len(color_hex) == 6:
+                                result = f'<font color="#{color_hex}">{result}</font>'
+                    except (AttributeError, TypeError):
+                        pass
+
+                    return result
+
+                # Check if any run has formatting that needs processing
+                has_formatting = False
+                for run in para.runs:
+                    if run.text.strip():
+                        if (run.bold or run.italic or run.underline or
+                            run.font.strike or run.font.subscript or run.font.superscript or
+                            is_code_run(run)):
+                            has_formatting = True
+                            break
+                        try:
+                            if run.font.color and run.font.color.rgb:
+                                has_formatting = True
+                                break
+                        except (AttributeError, TypeError):
+                            pass
+
+                if has_formatting:
+                    formatted_parts = [format_run(run) for run in para.runs]
+                    text = ''.join(formatted_parts)
+
+                # Detect heading styles
+                style_name = para.style.name if para.style else ''
+                if style_name.startswith('Heading 1'):
+                    last_list_level = -1
+                    return Paragraph(text, heading1_style)
+                elif style_name.startswith('Heading 2'):
+                    last_list_level = -1
+                    return Paragraph(text, heading2_style)
+                elif style_name.startswith('Heading 3') or style_name.startswith('Heading'):
+                    last_list_level = -1
+                    return Paragraph(text, heading3_style)
+
+                # Check for list items
+                list_type, level = get_list_info(para)
+
+                if list_type == 'number':
+                    # Reset lower levels when moving up, increment current level
+                    if level <= last_list_level:
+                        for l in range(level + 1, 3):
+                            number_counters[l] = 0
+                    number_counters[level] += 1
+                    last_list_level = level
+
+                    prefix = f"{number_counters[level]}. "
+                    style = list_number_2_style if level > 0 else list_number_style
+                    return Paragraph(f'{prefix}{text}', style)
+
+                elif list_type == 'bullet':
+                    last_list_level = level
+                    style = list_bullet_2_style if level > 0 else list_bullet_style
+                    return Paragraph(f'• {text}', style)
+
+                else:
+                    # Reset counters when not in list
+                    last_list_level = -1
+                    for l in number_counters:
+                        number_counters[l] = 0
+                    return Paragraph(text, normal_style)
+
+            def process_table(tbl):
+                """Process a single table and return reportlab elements."""
                 table_data = []
-                for row in table.rows:
-                    row_data = [cell.text for cell in row.cells]
+                for row in tbl.rows:
+                    row_data = []
+                    for cell in row.cells:
+                        cell_text = cell.text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                        row_data.append(cell_text)
                     table_data.append(row_data)
 
-                if table_data:
-                    table_count += 1
-                    t = Table(table_data)
-                    t.setStyle(TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), font_name_bold),
-                        ('FONTNAME', (0, 1), (-1, -1), font_name),
-                        ('FONTSIZE', (0, 0), (-1, 0), 12),
-                        ('FONTSIZE', (0, 1), (-1, -1), 10),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-                    ]))
-                    story.append(t)
-                    story.append(Spacer(1, 0.2*inch))
+                if not table_data:
+                    return []
 
-            self.log.debug(f"Processed {table_count} tables, total story elements: {len(story)}")
+                t = Table(table_data, hAlign='LEFT')
+                t.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#dbe5f1')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#365F91')),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (-1, 0), font_name_bold),
+                    ('FONTNAME', (0, 1), (-1, -1), font_name),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('TOPPADDING', (0, 0), (-1, -1), 4),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc'))
+                ]))
+                return [t, Spacer(1, 0.15 * inch)]
+
+            def process_image(drawing_element, doc):
+                """Extract image from drawing element and return reportlab Image."""
+                if not PIL_AVAILABLE:
+                    return None
+                try:
+                    # Navigate to blip element containing image reference
+                    blip = drawing_element.find('.//' + qn('a:blip'))
+                    if blip is None:
+                        return None
+
+                    # Get the relationship ID
+                    rId = blip.get(qn('r:embed'))
+                    if not rId:
+                        return None
+
+                    # Get image data from document parts
+                    image_part = doc.part.related_parts.get(rId)
+                    if not image_part:
+                        return None
+
+                    # Create reportlab Image from bytes
+                    img_buffer = io.BytesIO(image_part.blob)
+                    img = RLImage(img_buffer)
+
+                    # Scale image to fit page width (max 7 inches)
+                    max_width = 7 * inch
+                    if img.drawWidth > max_width:
+                        scale = max_width / img.drawWidth
+                        img.drawWidth = max_width
+                        img.drawHeight = img.drawHeight * scale
+
+                    # Left-align image
+                    img.hAlign = 'LEFT'
+
+                    return img
+                except Exception as e:
+                    self.log.debug(f"Error extracting image: {e}")
+                    return None
+
+            def add_to_story(result):
+                """Add paragraph result to story, handling lists or single elements."""
+                if isinstance(result, list):
+                    story.extend(result)
+                else:
+                    story.append(result)
+
+            # Iterate through body elements in document order (preserves table position)
+            para_count = 0
+            table_count = 0
+            for element in doc.element.body:
+                if element.tag == qn('w:p'):  # Paragraph
+                    para = DocxParagraph(element, doc)
+                    para_count += 1
+
+                    # Check for drawings (images) in paragraph
+                    drawings = element.findall('.//' + qn('w:drawing'))
+                    if drawings:
+                        # Process paragraph text first (if any)
+                        if para.text.strip():
+                            add_to_story(process_paragraph(para))
+                        # Then add images
+                        for drawing in drawings:
+                            img = process_image(drawing, doc)
+                            if img:
+                                story.append(img)
+                                story.append(Spacer(1, 0.1 * inch))
+                    else:
+                        add_to_story(process_paragraph(para))
+
+                elif element.tag == qn('w:tbl'):  # Table
+                    tbl = DocxTable(element, doc)
+                    table_count += 1
+                    story.extend(process_table(tbl))
+
+            self.log.debug(f"Processed {para_count} paragraphs, {table_count} tables in document order")
 
             # Build the PDF
             if not story:
@@ -422,27 +749,78 @@ class DocumentConverterHandler(APIHandler):
 
     def _register_unicode_fonts(self):
         """Register Unicode-supporting fonts from system paths."""
-        font_candidates = [
+        from reportlab.pdfbase.pdfmetrics import registerFontFamily
+
+        # Define font sets with normal, bold, italic, bolditalic variants
+        font_sets = [
             # DejaVu fonts (most common, excellent Unicode support)
-            ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 'UnicodeSans'),
-            ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 'UnicodeSansBold'),
+            {
+                'normal': '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+                'bold': '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+                'italic': None,  # Not available in this set
+                'boldItalic': None,
+            },
             # Liberation fonts (alternative)
-            ('/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf', 'UnicodeSans'),
-            ('/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf', 'UnicodeSansBold'),
+            {
+                'normal': '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+                'bold': '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+                'italic': '/usr/share/fonts/truetype/liberation/LiberationSans-Italic.ttf',
+                'boldItalic': '/usr/share/fonts/truetype/liberation/LiberationSans-BoldItalic.ttf',
+            },
             # FreeSans (GNU FreeFont)
-            ('/usr/share/fonts/truetype/freefont/FreeSans.ttf', 'UnicodeSans'),
-            ('/usr/share/fonts/truetype/freefont/FreeSansBold.ttf', 'UnicodeSansBold'),
+            {
+                'normal': '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+                'bold': '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+                'italic': '/usr/share/fonts/truetype/freefont/FreeSansOblique.ttf',
+                'boldItalic': '/usr/share/fonts/truetype/freefont/FreeSansBoldOblique.ttf',
+            },
         ]
 
+        font_names = {
+            'normal': 'UnicodeSans',
+            'bold': 'UnicodeSansBold',
+            'italic': 'UnicodeSansItalic',
+            'boldItalic': 'UnicodeSansBoldItalic',
+        }
+
         registered_fonts = set()
-        for font_path, font_name in font_candidates:
-            if os.path.exists(font_path) and font_name not in registered_fonts:
-                try:
-                    pdfmetrics.registerFont(TTFont(font_name, font_path))
-                    registered_fonts.add(font_name)
-                    self.log.info(f"Registered font {font_name} from {font_path}")
-                except Exception as font_error:
-                    self.log.debug(f"Failed to register {font_name} from {font_path}: {font_error}")
+
+        # Try each font set until we find one with at least normal and bold
+        for font_set in font_sets:
+            if 'UnicodeSans' in registered_fonts:
+                break  # Already have fonts registered
+
+            # Check if at least normal exists
+            if font_set['normal'] and os.path.exists(font_set['normal']):
+                for variant, path in font_set.items():
+                    if path and os.path.exists(path):
+                        font_name = font_names[variant]
+                        if font_name not in registered_fonts:
+                            try:
+                                pdfmetrics.registerFont(TTFont(font_name, path))
+                                registered_fonts.add(font_name)
+                                self.log.info(f"Registered font {font_name} from {path}")
+                            except Exception as font_error:
+                                self.log.debug(f"Failed to register {font_name} from {path}: {font_error}")
+
+        # Register font family to enable <b> and <i> tags in Paragraph
+        if 'UnicodeSans' in registered_fonts:
+            try:
+                # Use Helvetica-Oblique as fallback for italic if no Unicode italic available
+                # (Helvetica is a built-in PDF font, always available)
+                italic_font = 'UnicodeSansItalic' if 'UnicodeSansItalic' in registered_fonts else 'Helvetica-Oblique'
+                bold_italic_font = 'UnicodeSansBoldItalic' if 'UnicodeSansBoldItalic' in registered_fonts else 'Helvetica-BoldOblique'
+
+                registerFontFamily(
+                    'UnicodeSans',
+                    normal='UnicodeSans',
+                    bold='UnicodeSansBold' if 'UnicodeSansBold' in registered_fonts else 'UnicodeSans',
+                    italic=italic_font,
+                    boldItalic=bold_italic_font
+                )
+                self.log.info(f"Registered UnicodeSans font family (italic={italic_font})")
+            except Exception as e:
+                self.log.debug(f"Failed to register font family: {e}")
 
         if not registered_fonts:
             self.log.warning("No Unicode fonts found. International characters may not display correctly.")
