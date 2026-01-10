@@ -1,6 +1,6 @@
 {
     "name": "jupyterlab_doc_reader_extension",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "description": "JupyterLab extension that allows reading of DOCX, PPTX, and RTF documents",
     "keywords": [
         "jupyter",
