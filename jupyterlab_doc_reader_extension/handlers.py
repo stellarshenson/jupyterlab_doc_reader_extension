@@ -430,8 +430,8 @@ class DocumentConverterHandler(APIHandler):
 
                 text = para.text.strip()
                 if not text:
-                    # Empty paragraph - use line-height spacing for proper separation
-                    return Spacer(1, 0.15 * inch)
+                    # Empty paragraph - preserve as full empty line (matches normal text leading)
+                    return Spacer(1, 12)
 
                 # Escape XML special characters for base text and convert newlines
                 text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
