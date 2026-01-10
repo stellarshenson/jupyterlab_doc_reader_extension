@@ -34,7 +34,7 @@ jobs:
     - name: Run Python unit tests
       run: |
         set -eux
-        pip install pytest python-pptx python-docx reportlab Pillow
+        pip install pytest python-pptx python-docx reportlab Pillow pypdf
         python -m pytest jupyterlab_doc_reader_extension/tests/ -v --tb=short --confcutdir=jupyterlab_doc_reader_extension/tests
 
     - name: Build the extension
