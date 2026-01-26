@@ -7,6 +7,9 @@
 [![JupyterLab 4](https://img.shields.io/badge/JupyterLab-4-orange.svg)](https://jupyterlab.readthedocs.io/en/stable/)
 [![Brought To You By KOLOMOLO](https://img.shields.io/badge/Brought%20To%20You%20By-KOLOMOLO-00ffff?style=flat)](https://kolomolo.com)
 
+> [!TIP]
+> This extension is part of the [stellars_jupyterlab_extensions](https://github.com/stellarshenson/stellars_jupyterlab_extensions) metapackage. Install all Stellars extensions at once: `pip install stellars_jupyterlab_extensions`
+
 A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC), PowerPoint presentations (PPTX, PPT), and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
 
 ![](./.resources/screenshot_1.png)
