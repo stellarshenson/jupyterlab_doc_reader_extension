@@ -26,3 +26,6 @@
 
 9. **Task - Empty Line Preservation Fix** (v1.1.10): Fix empty paragraphs not rendering as visible blank lines in PDF output<br>
    **Result**: Replaced `Spacer(1, 12)` with `Paragraph("&nbsp;", normal_style)` in `handlers.py:434`. Spacer adds invisible vertical space which doesn't render as a visible blank line. Using a Paragraph with non-breaking space creates an actual text line that appears blank but takes up proper line height matching the source DOCX. All existing styling (bold, italic, dividers, headings, lists, colors) preserved.
+
+10. **Task - CI/CD jupyter-releaser Config** (v1.1.12): Configure jupyter-releaser workflows for direct commit workflow<br>
+    **Result**: Updated `.github/workflows/check-release.yml` and `prep-release.yml` per JUPYTERLAB_EXTENSION.md skill. Added `steps_to_skip: "build-changelog"` and `RH_SINCE_LAST_STABLE: 'true'` env to both workflows. This prevents failures from custom tags breaking changelog generation and handles direct commits without PRs.
