@@ -42,7 +42,7 @@ The extension offers exactly what each viewer library offers, and adds no featur
 ## Requirements
 
 - JupyterLab >= 4.6.0
-- Python >= 3.9
+- Python >= 3.10
 
 ## Install
 

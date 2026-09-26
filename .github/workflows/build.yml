@@ -67,7 +67,7 @@ jobs:
     - name: Install Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.13'
         architecture: 'x64'
     - uses: actions/download-artifact@v4
       with:
@@ -79,7 +79,7 @@ jobs:
         sudo rm -rf $(which node)
         sudo rm -rf $(which node)
 
-        pip install "jupyterlab>=4.0.0,<5" jupyterlab_doc_reader_extension*.whl
+        pip install "jupyterlab>=4.6.0,<5" jupyterlab_doc_reader_extension*.whl
 
 
         # frontend-only package: no server extension may be registered
@@ -112,7 +112,7 @@ jobs:
     - name: Install the extension
       run: |
         set -eux
-        python -m pip install "jupyterlab>=4.0.0,<5" jupyterlab_doc_reader_extension*.whl
+        python -m pip install "jupyterlab>=4.6.0,<5" jupyterlab_doc_reader_extension*.whl
 
     - name: Install dependencies
       working-directory: ui-tests
