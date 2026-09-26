@@ -60,8 +60,7 @@ const FILE_TYPES = [
  */
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab_doc_reader_extension:plugin',
-  description:
-    'JupyterLab extension that allows reading of DOCX, DOC, and RTF documents',
+  description: 'Renders DOCX, PPTX and RTF documents in the browser',
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
     console.log(

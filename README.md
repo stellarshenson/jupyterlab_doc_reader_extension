@@ -10,52 +10,49 @@
 > [!TIP]
 > This extension is part of the [stellars_jupyterlab_extensions](https://github.com/stellarshenson/stellars_jupyterlab_extensions) metapackage. Install all Stellars extensions at once: `pip install stellars_jupyterlab_extensions`
 
-A JupyterLab extension that allows viewing Microsoft Word documents (DOCX, DOC), PowerPoint presentations (PPTX, PPT), and Rich Text Format (RTF) files directly in JupyterLab. The extension automatically converts documents to PDF on-the-fly for seamless viewing without creating persistent files.
+A JupyterLab extension that displays Microsoft Word (DOCX) documents, PowerPoint (PPTX) presentations and Rich Text Format (RTF) files in JupyterLab. The browser renders each file from its bytes with an established open-source viewer library: no conversion to PDF, no LibreOffice and no server-side processing.
 
-![](./.resources/screenshot_1.png)
+![PPTX presentation with slide thumbnails, navigation, zoom and find](./.resources/screenshot_1.png)
+
+![DOCX document rendered as pages](./.resources/screenshot_2.png)
 
 ## Features
 
-- View DOCX, DOC, RTF, PPTX, and PPT files directly in JupyterLab
-- Automatic conversion to PDF for display (no temporary files created in your workspace)
-- Native PDF rendering in the browser
-- PowerPoint support with text, images, and tables rendered from slides
-- Unicode support with automatic font detection for international characters (Polish, German, French, etc.)
-- Read-only mode to prevent accidental modifications
-- Clean, integrated interface matching JupyterLab's design
+The extension offers exactly what each viewer library offers, and adds no feature of its own.
 
-## Architecture
+| Format | Viewer library                                                     | Licence    | What you get                                                                                |
+| ------ | ------------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
+| DOCX   | [docx-preview](https://github.com/VolodymyrBaydalka/docxjs)        | Apache-2.0 | Pages with headers, footers, footnotes, tables, images and numbering                        |
+| PPTX   | [@aiden0z/pptx-renderer](https://github.com/aiden0z/pptx-renderer) | Apache-2.0 | One slide at a time, slide thumbnails, previous and next, zoom and fit, find with highlight |
+| RTF    | [rtf.js](https://github.com/tbluemel/rtf.js)                       | MIT        | Formatted text and embedded WMF or EMF pictures                                             |
 
-This extension consists of:
+- Keys in a presentation: left and right arrows, PageUp, PageDown, Home, End
+- Find in a presentation: Enter for the next match, Shift+Enter for the previous one
+- Links in a DOCX or RTF document: `http`, `https` and `mailto` links open in a new tab, `#` links scroll inside the document, any other link is disabled
+- Read-only: files are never modified
+- Each viewer library loads only when a file of its format is opened
 
-- **Python server extension**: Handles document-to-PDF conversion using pure Python libraries (python-docx, python-pptx, reportlab, Pillow)
-- **TypeScript frontend extension**: Provides the document viewer widget and file type registration
+## Caveats
+
+- Legacy binary `.doc` and `.ppt` files have no browser renderer and show a message asking to save the file as DOCX or PPTX
+- DOCX pages break only at the page and section breaks written in the file, not where Word would flow text onto a new page, so a long section shows as one tall page
+- HTML that a DOCX embeds as an altChunk part is not shown, because docx-preview would run any script in it inside the JupyterLab page; a DOCX whose only content is such a part shows an empty page
+- Word documents and RTF files have no zoom, page counter or table of contents, because their viewers offer none; the browser's own find (Ctrl+F) searches their text
 
 ## Requirements
 
-- JupyterLab >= 4.0.0
+- JupyterLab >= 4.6.0
 - Python >= 3.9
-- No external system dependencies required (pure Python solution)
 
 ## Install
-
-Simply install the extension with pip:
 
 ```bash
 pip install jupyterlab_doc_reader_extension
 ```
 
-All required Python dependencies (python-docx, python-pptx, reportlab, Pillow) will be installed automatically.
-
 ## Usage
 
-Once installed, simply click on any `.docx`, `.doc`, `.rtf`, `.pptx`, or `.ppt` file in the JupyterLab file browser. The extension will automatically:
-
-1. Convert the document to PDF on the server
-2. Stream the PDF to your browser
-3. Display it in a dedicated viewer tab
-
-No temporary files are created in your workspace - the conversion happens in memory on the server side.
+Open any `.docx`, `.pptx` or `.rtf` file from the JupyterLab file browser. The document opens in a read-only viewer tab.
 
 ## Uninstall
 
@@ -67,15 +64,7 @@ pip uninstall jupyterlab_doc_reader_extension
 
 ## Troubleshoot
 
-If you are seeing the frontend extension, but it is not working, check
-that the server extension is enabled:
-
-```bash
-jupyter server extension list
-```
-
-If the server extension is installed and enabled, but you are not seeing
-the frontend extension, check the frontend extension is installed:
+If documents open in the text editor instead of the viewer, check that the extension is installed and enabled:
 
 ```bash
 jupyter labextension list
@@ -95,11 +84,9 @@ The `jlpm` command is JupyterLab's pinned version of
 # Clone the repo to your local environment
 # Change directory to the jupyterlab_doc_reader_extension directory
 # Install package in development mode
-pip install -e ".[test]"
+pip install -e .
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite
-# Server extension must be manually installed in develop mode
-jupyter server extension enable jupyterlab_doc_reader_extension
 # Rebuild extension Typescript source after making changes
 jlpm build
 ```
@@ -124,8 +111,6 @@ jupyter lab build --minimize=False
 ### Development uninstall
 
 ```bash
-# Server extension must be manually disabled in develop mode
-jupyter server extension disable jupyterlab_doc_reader_extension
 pip uninstall jupyterlab_doc_reader_extension
 ```
 
@@ -134,24 +119,6 @@ command. To find its location, you can run `jupyter labextension list` to figure
 folder is located. Then you can remove the symlink named `jupyterlab_doc_reader_extension` within that folder.
 
 ### Testing the extension
-
-#### Server tests
-
-This extension is using [Pytest](https://docs.pytest.org/) for Python code testing.
-
-Install test dependencies (needed only once):
-
-```sh
-pip install -e ".[test]"
-# Each time you install the Python package, you need to restore the front-end extension link
-jupyter labextension develop . --overwrite
-```
-
-To execute them, run:
-
-```sh
-pytest -vv -r ap --cov jupyterlab_doc_reader_extension
-```
 
 #### Frontend tests
 
@@ -169,7 +136,7 @@ jlpm test
 This extension uses [Playwright](https://playwright.dev/docs/intro) for the integration tests (aka user level tests).
 More precisely, the JupyterLab helper [Galata](https://github.com/jupyterlab/jupyterlab/tree/master/galata) is used to handle testing the extension in JupyterLab.
 
-More information are provided within the [ui-tests](./ui-tests/README.md) README.
+More information are provided within the [ui-tests](./ui-tests/README.md) README. The documents the tests open live in `ui-tests/tests/fixtures/`; `make_fixtures.py` there regenerates them.
 
 ### Packaging the extension
 

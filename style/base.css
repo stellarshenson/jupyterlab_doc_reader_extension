@@ -10,50 +10,106 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--jp-layout-color1);
+  outline: none;
 }
 
-.jp-DocReaderWidget-iframe {
+.jp-DocReaderWidget-content {
   flex: 1;
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: var(--jp-layout-color0);
+  min-height: 0;
+  overflow: auto;
 }
 
-.jp-DocReaderWidget-error {
+/* docx-preview centres its pages in a flex column; `safe` keeps a page wider
+   than the panel scrollable from its left edge instead of clipping it */
+.jp-DocReaderWidget-docx > div {
+  align-items: safe center;
+}
+
+/* RTF carries its own text colours, so it keeps a white page in every theme */
+.jp-DocReaderWidget-rtf {
+  padding: 24px 32px;
+  background: white;
+  color: black;
+}
+
+.jp-DocReaderWidget-pptx {
+  display: flex;
+  overflow: hidden;
+}
+
+.jp-DocReaderWidget-thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
+  width: 136px;
+  padding: 8px;
+  overflow-y: auto;
+  border-right: var(--jp-border-width) solid var(--jp-border-color2);
+  background: var(--jp-layout-color2);
+}
+
+.jp-DocReaderWidget-thumbnail {
+  flex: none;
+  width: 120px;
+  min-height: 68px;
+  padding: 0;
+  border: 2px solid transparent;
+  background: var(--jp-layout-color0);
+  cursor: pointer;
+}
+
+.jp-DocReaderWidget-thumbnail.jp-mod-active {
+  border-color: var(--jp-brand-color1);
+}
+
+.jp-DocReaderWidget-stage {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.jp-DocReaderWidget-message {
   padding: 20px;
-  color: var(--jp-error-color1);
-  background: var(--jp-layout-color1);
   overflow: auto;
   font-family: var(--jp-ui-font-family);
+  color: var(--jp-ui-font-color1);
 }
 
-.jp-DocReaderWidget-error h3 {
-  margin-top: 0;
-  color: var(--jp-error-color0);
-  font-size: 18px;
+.jp-DocReaderWidget-message h3 {
+  margin: 0 0 10px;
+  font-size: var(--jp-ui-font-size3);
   font-weight: 600;
 }
 
-.jp-DocReaderWidget-error p {
-  margin: 10px 0;
+.jp-DocReaderWidget-message p {
+  margin: 0;
   line-height: 1.6;
+  white-space: pre-wrap;
 }
 
-.jp-DocReaderWidget-error ul {
-  margin: 10px 0;
-  padding-left: 20px;
+.jp-DocReaderWidget-error h3 {
+  color: var(--jp-error-color1);
 }
 
-.jp-DocReaderWidget-error li {
-  margin: 5px 0;
-  line-height: 1.6;
+.jp-DocReaderWidget-position,
+.jp-DocReaderWidget-findStatus {
+  align-self: center;
+  padding: 0 6px;
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
 }
 
-.jp-DocReaderWidget-error code {
-  background: var(--jp-layout-color2);
+.jp-DocReaderWidget-find {
+  display: flex;
+  align-items: center;
+}
+
+.jp-DocReaderWidget-find input {
+  width: 160px;
   padding: 2px 6px;
-  border-radius: 3px;
-  font-family: var(--jp-code-font-family);
-  font-size: 0.9em;
+  border: var(--jp-border-width) solid var(--jp-border-color1);
+  background: var(--jp-layout-color0);
+  color: var(--jp-ui-font-color0);
+  font-size: var(--jp-ui-font-size1);
 }

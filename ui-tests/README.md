@@ -45,6 +45,12 @@ cd ./ui-tests
 jlpm playwright test
 ```
 
+The test server listens on port 8888. When another JupyterLab already uses it, pick a free port:
+
+```sh
+JUPYTER_TEST_PORT=8889 jlpm playwright test
+```
+
 Test results will be shown in the terminal. In case of any test failures, the test report
 will be opened in your browser at the end of the tests execution; see
 [Playwright documentation](https://playwright.dev/docs/test-reporters#html-reporter)

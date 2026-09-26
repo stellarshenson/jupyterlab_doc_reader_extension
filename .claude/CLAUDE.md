@@ -22,14 +22,14 @@ The following workspace rules are STRICTLY ENFORCED for this project:
 
 ## Project Context
 
-JupyterLab 4 extension for viewing Microsoft Word documents (DOCX, DOC) and Rich Text Format (RTF) files directly in JupyterLab. Converts documents to PDF on-the-fly using pure Python libraries.
+JupyterLab 4 extension for viewing Word (DOCX), PowerPoint (PPTX) and Rich Text Format (RTF) files directly in JupyterLab. The browser renders each file with a viewer library (docx-preview, @aiden0z/pptx-renderer, rtf.js); no PDF conversion, no LibreOffice, no server extension. The extension exposes only features its viewer libraries offer.
 
 **Technology Stack**:
 
 - Frontend: TypeScript, JupyterLab 4 extension API, Lumino widgets
-- Backend: Python server extension, python-docx, reportlab
+- Backend: none (frontend-only; the Python package only ships the prebuilt labextension)
 - Build: jlpm (Jupyter's yarn), webpack via @jupyterlab/builder
-- Testing: Jest (frontend), Pytest (backend), Playwright (integration)
+- Testing: Jest (frontend units), Playwright with Galata (functional, `ui-tests/`)
 - CI/CD: GitHub Actions, npm, PyPI
 
 **Package Names**:

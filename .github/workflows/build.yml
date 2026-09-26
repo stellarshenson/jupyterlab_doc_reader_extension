@@ -28,22 +28,17 @@ jobs:
       run: |
         set -eux
         jlpm
+        jlpm run lint:check
         jlpm run build
         jlpm run test
-
-    - name: Run Python unit tests
-      run: |
-        set -eux
-        pip install pytest python-pptx python-docx reportlab Pillow pypdf
-        python -m pytest jupyterlab_doc_reader_extension/tests/ -v --tb=short --confcutdir=jupyterlab_doc_reader_extension/tests
 
     - name: Build the extension
       run: |
         set -eux
         python -m pip install .
 
-        jupyter server extension list
-        jupyter server extension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"
+        # frontend-only package: no server extension may be registered
+        if jupyter server extension list 2>&1 | grep -i "jupyterlab_doc_reader_extension"; then exit 1; fi
 
         jupyter labextension list
         jupyter labextension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"
@@ -87,8 +82,8 @@ jobs:
         pip install "jupyterlab>=4.0.0,<5" jupyterlab_doc_reader_extension*.whl
 
 
-        jupyter server extension list
-        jupyter server extension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"
+        # frontend-only package: no server extension may be registered
+        if jupyter server extension list 2>&1 | grep -i "jupyterlab_doc_reader_extension"; then exit 1; fi
 
         jupyter labextension list
         jupyter labextension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"

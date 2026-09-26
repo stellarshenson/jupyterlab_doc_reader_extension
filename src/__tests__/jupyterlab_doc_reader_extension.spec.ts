@@ -1,85 +1,80 @@
 /**
- * Unit tests for jupyterlab_doc_reader_extension
- * Note: JupyterLab extension integration tests require Playwright (see ui-tests/)
+ * Unit tests for jupyterlab_doc_reader_extension.
+ * Rendering itself runs in a real browser: see ui-tests/.
  */
 
-describe('jupyterlab_doc_reader_extension', () => {
-  it('should be tested', () => {
-    expect(1 + 1).toEqual(2);
-  });
-});
+import { decodeBase64, guardLinks } from '../render';
 
-describe('base64 conversion', () => {
-  it('should correctly decode base64 to bytes', () => {
-    // Test the base64 to blob conversion logic
-    const testBase64 = btoa('Hello, World!');
-    const byteCharacters = atob(testBase64);
-    const byteNumbers = new Array(byteCharacters.length);
-
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: 'text/plain' });
-
-    expect(blob.size).toBe(13); // "Hello, World!" is 13 bytes
-  });
-
-  it('should create blob with correct type', () => {
-    const testBase64 = btoa('test');
-    const byteCharacters = atob(testBase64);
-    const byteNumbers = new Array(byteCharacters.length);
-
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: 'application/pdf' });
-
-    expect(blob.type).toBe('application/pdf');
-  });
-});
-
-describe('HTML escaping', () => {
-  it('should escape HTML special characters', () => {
-    const escapeHtml = (text: string): string => {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    };
-
-    expect(escapeHtml('<script>alert("xss")</script>')).toBe(
-      '&lt;script&gt;alert("xss")&lt;/script&gt;'
+describe('decodeBase64', () => {
+  it('decodes base64 split over lines, as Jupyter server sends it', () => {
+    const text = 'PK\u0003\u0004 archive bytes';
+    const encoded = btoa(text).replace(/(.{8})/g, '$1\n');
+    expect(Array.from(decodeBase64(encoded))).toEqual(
+      Array.from(text, c => c.charCodeAt(0))
     );
-    expect(escapeHtml('a & b')).toBe('a &amp; b');
-    expect(escapeHtml('"quoted"')).toBe('"quoted"');
+  });
+
+  it('returns no bytes for an empty file', () => {
+    expect(decodeBase64('')).toHaveLength(0);
   });
 });
 
-describe('file extension detection', () => {
-  it('should identify PPTX files', () => {
-    const path = '/path/to/presentation.pptx';
-    const ext = path.split('.').pop()?.toLowerCase();
-    expect(ext).toBe('pptx');
+describe('guardLinks', () => {
+  const render = (html: string): HTMLElement => {
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    document.body.append(host);
+    guardLinks(host);
+    return host;
+  };
+
+  afterEach(() => {
+    document.body.replaceChildren();
   });
 
-  it('should identify DOCX files', () => {
-    const path = '/path/to/document.docx';
-    const ext = path.split('.').pop()?.toLowerCase();
-    expect(ext).toBe('docx');
+  it('opens web and mail links in a new tab', () => {
+    const host = render(
+      '<a href="https://jupyter.org">web</a><a href="mailto:a@b.c">mail</a>'
+    );
+    host.querySelectorAll('a').forEach(link => {
+      expect(link.target).toBe('_blank');
+      expect(link.rel).toBe('noopener noreferrer');
+    });
   });
 
-  it('should identify RTF files', () => {
-    const path = '/path/to/document.rtf';
-    const ext = path.split('.').pop()?.toLowerCase();
-    expect(ext).toBe('rtf');
+  it.each([
+    ['javascript:alert(1)'],
+    [' JavaScript:alert(1)'],
+    ['data:text/html,x'],
+    ['other.docx'],
+    [''],
+    ['#']
+  ])('removes the link target %p', href => {
+    const host = render(`<a href="${href}">link</a>`);
+    const link = host.querySelector('a')!;
+    expect(link.hasAttribute('href')).toBe(false);
+    expect(link.title).toContain('Link disabled');
   });
 
-  it('should handle uppercase extensions', () => {
-    const path = '/path/to/PRESENTATION.PPTX';
-    const ext = path.split('.').pop()?.toLowerCase();
-    expect(ext).toBe('pptx');
+  it('scrolls a # link to its bookmark inside the document', () => {
+    const host = render(
+      '<a href="#part2">jump</a><span id="part2">Part 2</span>'
+    );
+    const bookmark = host.querySelector('#part2')!;
+    bookmark.scrollIntoView = jest.fn();
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+    host.querySelector('a')!.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(true);
+    expect(bookmark.scrollIntoView).toHaveBeenCalled();
+  });
+
+  it('does not reach an element with the same id outside the document', () => {
+    const outside = document.createElement('div');
+    outside.id = 'main';
+    outside.scrollIntoView = jest.fn();
+    document.body.append(outside);
+    const host = render('<a href="#main">jump</a>');
+    host.querySelector('a')!.click();
+    expect(outside.scrollIntoView).not.toHaveBeenCalled();
   });
 });
