@@ -52,7 +52,7 @@ export async function renderRtf(
   host.append(...(await document.render()));
 }
 
-const EXTERNAL_LINK = /^(https?:|mailto:)/i;
+export const EXTERNAL_LINK = /^(https?:|mailto:)/i;
 
 /**
  * Stop document links from navigating JupyterLab itself: external links open

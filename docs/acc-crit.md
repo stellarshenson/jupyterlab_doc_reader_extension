@@ -178,6 +178,13 @@ Toolbar, errors and link handling shared by every format
   - mechanism: 2026-09-26T16:03:48Z @kj renderDocx passes renderAltChunks: false to docx-preview renderAsync
   - log: 2026-09-26T16:03:48Z @kj added
   - log: 2026-09-26T16:11:08Z @kj closed
+- [x] `ACC-VIEW-33` **Unreadable new formats show error** - HIGH; an ODT, ODP or XLSX file the viewer cannot read shows the error panel with the reason; a file that is not a zip archive never opens as an empty workbook
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: broken.odt (text) and broken.xlsx (half of a workbook) both show the error panel with a reason
+  - test: open broken.odt and broken.xlsx; assert the error panel each time
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:39Z @kj added
+  - log: 2026-09-26T19:08:41Z @kj edited text "an ODT, ODP or XLSX file the viewer cannot read shows the error panel with the viewer message" -> "an ODT, ODP or XLSX file the viewer cannot read shows the error panel with the reason; a file that is not a zip archive never opens as an empty workbook"
+  - log: 2026-09-26T20:14:18Z @kj closed
 
 ## Rich Text `RTF`
 
@@ -202,4 +209,67 @@ What the Python and npm packages ship
   - log: 2026-09-26T14:52:58Z @kj added
   - log: 2026-09-26T15:18:51Z @kj edited test-tags added "INTEGRATION"
   - log: 2026-09-26T16:11:08Z @kj closed
+
+## OpenDocument `ODF`
+
+ODT and ODP files rendered in the browser by @opendocument/odr-core inside a sandboxed frame
+
+- [x] `ACC-ODF-26` **Client-side ODT render** - CRITICAL; a .odt opens as formatted pages drawn by @opendocument/odr-core in the browser, with no PDF step
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: 'renders formatted pages in a sandboxed frame' finds the heading, 4 table cells and a bold run of weight 700 or more
+  - test: open sample.odt; assert the heading, a bold run and a table in the frame
+  - test-tags: E2E
+  - mechanism: 2026-09-26T18:36:38Z @kj odr-core renders view 0 to one HTML page; the widget shows it in an iframe
+  - log: 2026-09-26T18:36:38Z @kj added
+  - log: 2026-09-26T20:14:17Z @kj closed
+- [x] `ACC-ODF-27` **Client-side ODP render** - CRITICAL; a .odp opens as its slides, laid out as pages, drawn by @opendocument/odr-core; no thumbnails, the library has none
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: 'renders every slide and finds text across them' finds the titles Alpha, Beta and Gamma in the frame
+  - test: open sample.odp; assert the three slide titles in the frame
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:38Z @kj added
+  - log: 2026-09-26T20:14:17Z @kj closed
+- [x] `ACC-ODF-28` **Sandboxed ODF frame** - CRITICAL; ODF output runs in an iframe with sandbox=allow-scripts only, so neither the library's script nor the document can reach or navigate the JupyterLab page
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: the ODT render test asserts sandbox=allow-scripts and a null contentDocument; the links test clicks a javascript: link, no mark and no new tab
+  - test: open an ODT with a javascript: link, click it; assert the sandbox attribute and no mark on the JupyterLab page
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:38Z @kj added
+  - log: 2026-09-26T20:14:17Z @kj closed
+- [x] `ACC-ODF-29` **ODF zoom and find** - HIGH; toolbar zoom in, zoom out and fit call the odr page setZoom and resetZoom; find calls its search, searchNext and searchPrevious and shows the match count
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: 'finds text and zooms with the viewer': Cell gives 1 of 4, 2 of 4, then 1 of 4 on Shift+Enter, 4 highlights; zoom in grows the heading, Fit restores it
+  - test: open sample.odt; find Cell: 1 of 4, Enter: 2 of 4, Shift+Enter: 1 of 4, four highlights; zoom in, assert the heading grows; Fit returns it
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:38Z @kj added
+  - log: 2026-09-26T20:05:54Z @kj edited test "open sample.odt; find a word with two matches, assert 2 matches; zoom in, assert the page grows" -> "open sample.odt; find Cell: 1 of 4, Enter: 2 of 4, Shift+Enter: 1 of 4, four highlights; zoom in, assert the heading grows; Fit returns it"
+  - log: 2026-09-26T20:14:17Z @kj closed
+- [x] `ACC-ODF-30` **ODF links** - HIGH; http, https and mailto links in an ODF document open in a new tab; any other link does nothing
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: 'opens web links in a new tab and ignores unsafe ones' sees one new tab at https://example.org/ and none for the unsafe link
+  - test: open sample.odt, click its web link; assert a new tab with that URL
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:39Z @kj added
+  - log: 2026-09-26T20:14:17Z @kj closed
+
+## Spreadsheets `SHEET`
+
+XLSX workbooks drawn in the browser by @silurus/ooxml with its own sheet tabs and zoom
+
+- [x] `ACC-SHEET-31` **Client-side XLSX render** - CRITICAL; a .xlsx opens as its sheets drawn by @silurus/ooxml, with the viewer's own sheet tabs; formulas show the results saved in the file
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: 'draws the workbook with its sheet tabs and finds cells' finds a canvas and the tabs Data and Other
+  - test: open sample.xlsx; assert a canvas and the sheet tabs Data and Other
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:39Z @kj added
+  - log: 2026-09-26T19:08:41Z @kj edited text "a .xlsx opens as its sheets drawn by @silurus/ooxml, with the viewer's own sheet tabs and zoom slider; formulas show their saved results" -> "a .xlsx opens as its sheets drawn by @silurus/ooxml, with the viewer's own sheet tabs; formulas show the results saved in the file"
+  - log: 2026-09-26T20:05:54Z @kj edited test "open sample.xlsx; assert a canvas and a tab per sheet; click the second tab" -> "open sample.xlsx; assert a canvas and the sheet tabs Data and Other"
+  - log: 2026-09-26T20:14:18Z @kj closed
+- [x] `ACC-SHEET-32` **Find in sheets** - HIGH; the toolbar find box calls the viewer findText, findNext and findPrev and shows k of m or No matches
+  - evidence: galata 21/21 on the 1.2.0 wheel, 2026-09-26: the same XLSX test shows 1 of 1 for Pears, 1 of 1 for Second sheet cell on the other sheet, and No matches
+  - test: open sample.xlsx; find Pears, assert 1 of 1; find a missing word, assert No matches
+  - test-tags: E2E
+  - log: 2026-09-26T18:36:39Z @kj added
+  - log: 2026-09-26T20:14:18Z @kj closed
+- [x] `ACC-SHEET-34` **Sheet zoom** - MEDIUM; toolbar zoom in and zoom out call the viewer setScale in 25 percent steps; 100% calls setScale(1), the scale the sheet opened at
+  - evidence: one-off galata screenshots 2026-09-26: two zoom-in clicks change the view; Zoom to 100% returns a view pixel-identical to the opening one
+  - test: open sample.xlsx, press zoom in twice; assert the cells grow; press 100%; assert the opening size
+  - test-tags: MANUAL
+  - log: 2026-09-26T19:08:42Z @kj added
+  - log: 2026-09-26T19:15:17Z @kj edited title "Sheet zoom and fit" -> "Sheet zoom"; text "toolbar zoom in and zoom out call the viewer setScale in 25 percent steps; fit calls its fitWidth" -> "toolbar zoom in and zoom out call the viewer setScale in 25 percent steps; 100% calls setScale(1), the scale the sheet opened at"; test "open sample.xlsx, press zoom in; assert the cells grow; press fit" -> "open sample.xlsx, press zoom in twice; assert the cells grow; press 100%; assert the opening size"
+  - log: 2026-09-26T20:14:18Z @kj closed
 

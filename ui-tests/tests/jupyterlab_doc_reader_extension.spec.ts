@@ -254,3 +254,151 @@ test.describe('legacy formats', () => {
     });
   }
 });
+
+test.describe('ODT', () => {
+  const frame = (widget: Locator) =>
+    widget.locator('iframe.jp-DocReaderWidget-frame').contentFrame();
+
+  test('renders formatted pages in a sandboxed frame', async ({
+    page,
+    tmpPath
+  }) => {
+    const widget = await open(page, tmpPath, 'sample.odt');
+
+    await expect(frame(widget).getByText('Sample Heading')).toBeVisible();
+    await expect(frame(widget).locator('td')).toHaveCount(4);
+    const bold = frame(widget).getByText('bold run');
+    const weight = await bold.evaluate(
+      element => getComputedStyle(element).fontWeight
+    );
+    expect(Number(weight)).toBeGreaterThanOrEqual(700);
+    const iframe = widget.locator('iframe');
+    await expect(iframe).toHaveAttribute('sandbox', 'allow-scripts');
+    // an opaque origin: JupyterLab cannot reach the page, nor the page JupyterLab
+    expect(
+      await iframe.evaluate(element => element.contentDocument === null)
+    ).toBe(true);
+  });
+
+  test('finds text and zooms with the viewer', async ({ page, tmpPath }) => {
+    const widget = await open(page, tmpPath, 'sample.odt');
+    const heading = frame(widget).getByText('Sample Heading');
+    await expect(heading).toBeVisible();
+    const find = page.getByLabel('Find in document');
+    const status = page.locator('.jp-DocReaderWidget-findStatus');
+
+    await find.fill('Cell');
+    await find.press('Enter');
+    await expect(status).toHaveText('1 of 4');
+    await find.press('Enter');
+    await expect(status).toHaveText('2 of 4');
+    await find.press('Shift+Enter');
+    await expect(status).toHaveText('1 of 4');
+    await expect(frame(widget).locator('mark')).toHaveCount(4);
+    await find.fill('no such words');
+    await find.press('Enter');
+    await expect(status).toHaveText('No matches');
+
+    const height = async () => (await heading.boundingBox())!.height;
+    const fitted = await height();
+    await page.getByTitle('Zoom in').click();
+    await expect.poll(height).toBeGreaterThan(fitted * 1.2);
+    await page.getByTitle('Fit page to width').click();
+    await expect.poll(height).toBeCloseTo(fitted, 0);
+  });
+
+  test('opens web links in a new tab and ignores unsafe ones', async ({
+    page,
+    tmpPath
+  }) => {
+    await page
+      .context()
+      .route('https://example.org/**', route => route.fulfill({ body: 'ok' }));
+    const widget = await open(page, tmpPath, 'sample.odt');
+    const popups: string[] = [];
+    page.context().on('page', popup => popups.push(popup.url()));
+
+    await frame(widget).getByText('Unsafe link').click();
+    await frame(widget).getByText('Example link').click();
+    await expect.poll(() => popups.length).toBe(1);
+    await expect
+      .poll(() => page.context().pages().at(-1)!.url())
+      .toBe('https://example.org/');
+    expect(
+      await page.evaluate(() => document.body.dataset.odflink)
+    ).toBeUndefined();
+  });
+
+  test('shows the viewer error for a file that is not an ODT', async ({
+    page,
+    tmpPath
+  }) => {
+    const widget = await open(page, tmpPath, 'broken.odt');
+
+    const error = widget.locator('.jp-DocReaderWidget-error');
+    await expect(error).toContainText('Cannot display this document');
+    await expect(error.locator('p')).not.toBeEmpty();
+  });
+});
+
+test.describe('ODP', () => {
+  test('renders every slide and finds text across them', async ({
+    page,
+    tmpPath
+  }) => {
+    const widget = await open(page, tmpPath, 'sample.odp');
+    const frame = widget.locator('iframe').contentFrame();
+
+    for (const title of ['Alpha', 'Beta', 'Gamma']) {
+      await expect(frame.getByText(title, { exact: true })).toBeAttached();
+    }
+    const find = page.getByLabel('Find in slides');
+    await find.fill('zebra');
+    await find.press('Enter');
+    await expect(page.locator('.jp-DocReaderWidget-findStatus')).toHaveText(
+      '1 of 1'
+    );
+    await expect(frame.locator('mark')).toHaveCount(1);
+  });
+});
+
+test.describe('XLSX', () => {
+  test('draws the workbook with its sheet tabs and finds cells', async ({
+    page,
+    tmpPath
+  }) => {
+    const widget = await open(page, tmpPath, 'sample.xlsx');
+    const status = page.locator('.jp-DocReaderWidget-findStatus');
+
+    // the viewer draws before its load resolves; find works after that
+    await expect(widget.locator('.jp-DocReaderWidget-loading')).toHaveCount(0, {
+      timeout: 30000
+    });
+    await expect(widget.locator('canvas').first()).toBeVisible();
+    await expect(widget.getByText('Data', { exact: true })).toBeVisible();
+    await expect(widget.getByText('Other', { exact: true })).toBeVisible();
+    await expect(widget.locator('embed, iframe')).toHaveCount(0);
+
+    const find = page.getByLabel('Find in sheets');
+    await find.fill('Pears');
+    await find.press('Enter');
+    await expect(status).toHaveText('1 of 1');
+    await find.fill('Second sheet cell');
+    await find.press('Enter');
+    await expect(status).toHaveText('1 of 1');
+    await find.fill('no such words');
+    await find.press('Enter');
+    await expect(status).toHaveText('No matches');
+  });
+
+  test('shows the viewer error for a file that is not an XLSX', async ({
+    page,
+    tmpPath
+  }) => {
+    const widget = await open(page, tmpPath, 'broken.xlsx');
+
+    await expect(widget.locator('.jp-DocReaderWidget-error')).toContainText(
+      'Cannot display this document'
+    );
+  });
+});

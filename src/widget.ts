@@ -14,8 +14,11 @@ import {
 import { ISignal, Signal } from '@lumino/signaling';
 import { Message } from '@lumino/messaging';
 import { Widget } from '@lumino/widgets';
+import { OdfFrame } from './odf';
 import { decodeBase64, guardLinks, renderDocx, renderRtf } from './render';
 import { SlideDeck } from './slides';
+import { IDocumentViewer } from './viewer';
+import { Workbook } from './workbook';
 
 /**
  * Binary formats no browser renderer reads, and the format to save them as
@@ -26,8 +29,38 @@ const LEGACY_FORMATS: Record<string, string> = {
 };
 
 /**
- * A widget that renders DOCX, PPTX and RTF files in the browser, from the
- * bytes JupyterLab loads for the document
+ * Formats whose viewer offers zoom and search, with their toolbar text: the
+ * button that returns to the opening zoom, and the find box
+ */
+const TOOLBAR_TEXT: Record<
+  string,
+  { reset: string; resetTooltip: string; find: string }
+> = {
+  '.pptx': {
+    reset: 'Fit',
+    resetTooltip: 'Fit slide to width',
+    find: 'Find in slides'
+  },
+  '.odp': {
+    reset: 'Fit',
+    resetTooltip: 'Fit slide to width, never above 100%',
+    find: 'Find in slides'
+  },
+  '.odt': {
+    reset: 'Fit',
+    resetTooltip: 'Fit page to width, never above 100%',
+    find: 'Find in document'
+  },
+  '.xlsx': {
+    reset: '100%',
+    resetTooltip: 'Zoom to 100%',
+    find: 'Find in sheets'
+  }
+};
+
+/**
+ * A widget that renders DOCX, PPTX, RTF, ODT, ODP and XLSX files in the
+ * browser, from the bytes JupyterLab loads for the document
  */
 export class DocReaderWidget extends Widget {
   constructor(context: DocumentRegistry.Context) {
@@ -41,17 +74,17 @@ export class DocReaderWidget extends Widget {
   }
 
   /**
-   * The slide deck of a PPTX document, once rendered
+   * The viewer of a PPTX, ODT, ODP or XLSX document, once rendered
    */
-  get deck(): SlideDeck | null {
-    return this._deck;
+  get viewer(): IDocumentViewer | null {
+    return this._viewer;
   }
 
   /**
-   * Emitted when the deck is rendered and whenever it changes
+   * Emitted when the document is rendered and whenever its viewer changes
    */
-  get deckChanged(): ISignal<this, void> {
-    return this._deckChanged;
+  get viewerChanged(): ISignal<this, void> {
+    return this._viewerChanged;
   }
 
   /**
@@ -67,7 +100,7 @@ export class DocReaderWidget extends Widget {
     if (this.isDisposed) {
       return;
     }
-    this._deck?.dispose();
+    this._viewer?.dispose();
     super.dispose();
   }
 
@@ -106,19 +139,22 @@ export class DocReaderWidget extends Widget {
         throw new Error('The file is empty.');
       }
       // The host is attached before rendering: the PPTX viewer sizes the
-      // slide from the width of its container
+      // slide from the width of its container, and a frame loads its page
+      // only once it is in the document
       const host = document.createElement('div');
       host.className = `jp-DocReaderWidget-content jp-DocReaderWidget-${ext.slice(1)}`;
       this.node.append(host);
+      let viewer: IDocumentViewer | null = null;
       if (ext === '.pptx') {
-        const deck = await SlideDeck.open(bytes, host);
-        // the tab may have been closed while the deck was parsed
-        if (this.isDisposed) {
-          deck.dispose();
-          return;
-        }
-        this._deck = deck;
-        this._deck.changed.connect(() => this._deckChanged.emit());
+        viewer = await SlideDeck.open(bytes, host);
+      } else if (ext === '.odt' || ext === '.odp') {
+        viewer = await OdfFrame.open(
+          bytes,
+          ext === '.odt' ? 'odt' : 'odp',
+          host
+        );
+      } else if (ext === '.xlsx') {
+        viewer = await Workbook.open(bytes, host);
       } else if (ext === '.rtf') {
         await renderRtf(bytes, host);
         guardLinks(host);
@@ -126,11 +162,24 @@ export class DocReaderWidget extends Widget {
         await renderDocx(bytes, host);
         guardLinks(host);
       }
-      this.node.replaceChildren(host);
-      this._deckChanged.emit();
+      // the tab may have been closed while the viewer read the file
+      if (this.isDisposed) {
+        viewer?.dispose();
+        return;
+      }
+      if (viewer) {
+        this._viewer = viewer;
+        viewer.changed.connect(() => this._viewerChanged.emit());
+      }
+      // Remove only the loading message: moving the host would detach it,
+      // and a detached frame reloads its page
+      Array.from(this.node.children)
+        .filter(child => child !== host)
+        .forEach(child => child.remove());
+      this._viewerChanged.emit();
     } catch (error) {
-      this._deck?.dispose();
-      this._deck = null;
+      this._viewer?.dispose();
+      this._viewer = null;
       this._showMessage(
         'jp-DocReaderWidget-error',
         'Cannot display this document',
@@ -143,8 +192,8 @@ export class DocReaderWidget extends Widget {
    * Move between slides with the arrow, PageUp, PageDown, Home and End keys
    */
   private _onKeyDown(event: KeyboardEvent): void {
-    const deck = this._deck;
-    if (!deck) {
+    const deck = this._viewer;
+    if (!(deck instanceof SlideDeck)) {
       return;
     }
     let index: number;
@@ -188,8 +237,8 @@ export class DocReaderWidget extends Widget {
   }
 
   private _context: DocumentRegistry.Context;
-  private _deck: SlideDeck | null = null;
-  private _deckChanged = new Signal<this, void>(this);
+  private _viewer: IDocumentViewer | null = null;
+  private _viewerChanged = new Signal<this, void>(this);
 }
 
 /**
@@ -207,21 +256,28 @@ export class DocReaderFactory extends ABCWidgetFactory<
   ): DocumentWidget<DocReaderWidget> {
     const content = new DocReaderWidget(context);
     const widget = new DocumentWidget({ content, context });
-    if (PathExt.extname(context.path).toLowerCase() === '.pptx') {
-      addSlideToolbar(widget.toolbar, content);
+    const ext = PathExt.extname(context.path).toLowerCase();
+    if (TOOLBAR_TEXT[ext]) {
+      addViewerToolbar(widget.toolbar, content, ext);
     }
     return widget;
   }
 }
 
 /**
- * Add the slide viewer controls: previous, next, position, zoom, fit, find
+ * Add the viewer controls: previous, position and next for slides, then zoom,
+ * the opening zoom and find, each a call into the format's viewer
  */
-function addSlideToolbar(toolbar: Toolbar, content: DocReaderWidget): void {
+function addViewerToolbar(
+  toolbar: Toolbar,
+  content: DocReaderWidget,
+  ext: string
+): void {
+  const text = TOOLBAR_TEXT[ext];
   const button = (
     name: string,
     options: ToolbarButtonComponent.IProps,
-    action: (deck: SlideDeck) => Promise<void>
+    action: (viewer: IDocumentViewer) => Promise<void>
   ) => {
     toolbar.addItem(
       name,
@@ -230,31 +286,44 @@ function addSlideToolbar(toolbar: Toolbar, content: DocReaderWidget): void {
         // keep focus on the slide so the navigation keys keep working
         noFocusOnClick: true,
         onClick: () => {
-          if (content.deck) {
-            void action(content.deck);
+          if (content.viewer) {
+            void action(content.viewer);
           }
         }
       })
     );
   };
-  button(
-    'previous-slide',
-    { icon: caretLeftIcon, tooltip: 'Previous slide' },
-    deck => deck.goTo(deck.index - 1)
-  );
   const position = new Widget({ node: document.createElement('span') });
-  position.addClass('jp-DocReaderWidget-position');
-  position.node.setAttribute('role', 'status');
-  toolbar.addItem('slide-position', position);
-  button('next-slide', { icon: caretRightIcon, tooltip: 'Next slide' }, deck =>
-    deck.goTo(deck.index + 1)
+  if (ext === '.pptx') {
+    const move = (step: number) => async (viewer: IDocumentViewer) => {
+      if (viewer instanceof SlideDeck) {
+        await viewer.goTo(viewer.index + step);
+      }
+    };
+    button(
+      'previous-slide',
+      { icon: caretLeftIcon, tooltip: 'Previous slide' },
+      move(-1)
+    );
+    position.addClass('jp-DocReaderWidget-position');
+    position.node.setAttribute('role', 'status');
+    toolbar.addItem('slide-position', position);
+    button(
+      'next-slide',
+      { icon: caretRightIcon, tooltip: 'Next slide' },
+      move(1)
+    );
+  }
+  button('zoom-out', { label: '-', tooltip: 'Zoom out' }, viewer =>
+    viewer.zoom(-1)
   );
-  button('zoom-out', { label: '-', tooltip: 'Zoom out' }, deck =>
-    deck.zoom(-1)
+  button('zoom-in', { label: '+', tooltip: 'Zoom in' }, viewer =>
+    viewer.zoom(1)
   );
-  button('zoom-in', { label: '+', tooltip: 'Zoom in' }, deck => deck.zoom(1));
-  button('fit', { label: 'Fit', tooltip: 'Fit slide to width' }, deck =>
-    deck.fit()
+  button(
+    'reset-zoom',
+    { label: text.reset, tooltip: text.resetTooltip },
+    viewer => viewer.resetZoom()
   );
   toolbar.addItem('spacer', Toolbar.createSpacerItem());
 
@@ -262,26 +331,26 @@ function addSlideToolbar(toolbar: Toolbar, content: DocReaderWidget): void {
   find.addClass('jp-DocReaderWidget-find');
   const input = document.createElement('input');
   input.type = 'search';
-  input.placeholder = 'Find in slides';
-  input.setAttribute('aria-label', 'Find in slides');
+  input.placeholder = text.find;
+  input.setAttribute('aria-label', text.find);
   input.title = 'Enter for the next match, Shift+Enter for the previous one';
   const status = document.createElement('span');
   status.className = 'jp-DocReaderWidget-findStatus';
   status.setAttribute('role', 'status');
   find.node.append(input, status);
   input.addEventListener('keydown', event => {
-    if (event.key === 'Enter' && content.deck) {
+    if (event.key === 'Enter' && content.viewer) {
       event.preventDefault();
-      void content.deck.find(input.value, event.shiftKey);
+      void content.viewer.find(input.value, event.shiftKey);
     }
   });
   toolbar.addItem('find', find);
 
-  content.deckChanged.connect(() => {
-    const deck = content.deck;
-    if (deck) {
-      position.node.textContent = `${deck.index + 1} / ${deck.count}`;
-      status.textContent = deck.findStatus;
+  content.viewerChanged.connect(() => {
+    const viewer = content.viewer;
+    if (viewer instanceof SlideDeck) {
+      position.node.textContent = `${viewer.index + 1} / ${viewer.count}`;
     }
+    status.textContent = viewer?.findStatus ?? '';
   });
 }

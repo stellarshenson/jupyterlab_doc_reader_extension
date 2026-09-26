@@ -37,6 +37,19 @@
   overflow: hidden;
 }
 
+/* ODT and ODP pages run in a sandboxed frame that fills the panel */
+.jp-DocReaderWidget-odt,
+.jp-DocReaderWidget-odp,
+.jp-DocReaderWidget-xlsx {
+  display: flex;
+  overflow: hidden;
+}
+
+.jp-DocReaderWidget-frame {
+  flex: 1;
+  border: 0;
+}
+
 .jp-DocReaderWidget-thumbnails {
   display: flex;
   flex-direction: column;

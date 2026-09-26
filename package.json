@@ -1,7 +1,7 @@
 {
     "name": "jupyterlab_doc_reader_extension",
     "version": "1.2.0",
-    "description": "JupyterLab extension that allows reading of DOCX, PPTX, and RTF documents",
+    "description": "JupyterLab extension that allows reading of DOCX, PPTX, XLSX, ODT, ODP and RTF documents",
     "keywords": [
         "jupyter",
         "jupyterlab",
@@ -66,6 +66,8 @@
         "@lumino/messaging": "^2.0.0",
         "@lumino/signaling": "^2.0.0",
         "@lumino/widgets": "^2.9.0",
+        "@opendocument/odr-core": "^7.3.2",
+        "@silurus/ooxml": "^0.88.0",
         "docx-preview": "^0.4.1",
         "rtf.js": "^3.0.9"
     },
@@ -110,7 +112,8 @@
     },
     "jupyterlab": {
         "extension": true,
-        "outputDir": "jupyterlab_doc_reader_extension/labextension"
+        "outputDir": "jupyterlab_doc_reader_extension/labextension",
+        "webpackConfig": "./webpack.config.js"
     },
     "eslintIgnore": [
         "node_modules",

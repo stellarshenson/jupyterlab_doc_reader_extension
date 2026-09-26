@@ -22,7 +22,7 @@ The following workspace rules are STRICTLY ENFORCED for this project:
 
 ## Project Context
 
-JupyterLab 4 extension for viewing Word (DOCX), PowerPoint (PPTX) and Rich Text Format (RTF) files directly in JupyterLab. The browser renders each file with a viewer library (docx-preview, @aiden0z/pptx-renderer, rtf.js); no PDF conversion, no LibreOffice, no server extension. The extension exposes only features its viewer libraries offer.
+JupyterLab 4 extension for viewing Word (DOCX), PowerPoint (PPTX), Excel (XLSX), OpenDocument (ODT, ODP) and Rich Text Format (RTF) files directly in JupyterLab. The browser renders each file with a viewer library (docx-preview, @aiden0z/pptx-renderer, @silurus/ooxml, @opendocument/odr-core in a sandboxed frame, rtf.js); no PDF conversion, no LibreOffice, no server extension. The extension exposes only features its viewer libraries offer.
 
 **Technology Stack**:
 

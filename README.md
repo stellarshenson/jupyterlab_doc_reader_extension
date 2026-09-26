@@ -10,7 +10,7 @@
 > [!TIP]
 > This extension is part of the [stellars_jupyterlab_extensions](https://github.com/stellarshenson/stellars_jupyterlab_extensions) metapackage. Install all Stellars extensions at once: `pip install stellars_jupyterlab_extensions`
 
-A JupyterLab extension that displays Microsoft Word (DOCX) documents, PowerPoint (PPTX) presentations and Rich Text Format (RTF) files in JupyterLab. The browser renders each file from its bytes with an established open-source viewer library: no conversion to PDF, no LibreOffice and no server-side processing.
+A JupyterLab extension that displays Microsoft Word (DOCX) documents, PowerPoint (PPTX) presentations, Excel (XLSX) workbooks, OpenDocument text (ODT) and presentation (ODP) files, and Rich Text Format (RTF) files in JupyterLab. The browser renders each file from its bytes with an established open-source viewer library: no conversion to PDF, no LibreOffice and no server-side processing.
 
 ![PPTX presentation with slide thumbnails, navigation, zoom and find](./.resources/screenshot_1.png)
 
@@ -20,15 +20,18 @@ A JupyterLab extension that displays Microsoft Word (DOCX) documents, PowerPoint
 
 The extension offers exactly what each viewer library offers, and adds no feature of its own.
 
-| Format | Viewer library                                                     | Licence    | What you get                                                                                |
-| ------ | ------------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
-| DOCX   | [docx-preview](https://github.com/VolodymyrBaydalka/docxjs)        | Apache-2.0 | Pages with headers, footers, footnotes, tables, images and numbering                        |
-| PPTX   | [@aiden0z/pptx-renderer](https://github.com/aiden0z/pptx-renderer) | Apache-2.0 | One slide at a time, slide thumbnails, previous and next, zoom and fit, find with highlight |
-| RTF    | [rtf.js](https://github.com/tbluemel/rtf.js)                       | MIT        | Formatted text and embedded WMF or EMF pictures                                             |
+| Format   | Viewer library                                                                                 | Licence    | What you get                                                                                |
+| -------- | ---------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------- |
+| DOCX     | [docx-preview](https://github.com/VolodymyrBaydalka/docxjs)                                    | Apache-2.0 | Pages with headers, footers, footnotes, tables, images and numbering                        |
+| PPTX     | [@aiden0z/pptx-renderer](https://github.com/aiden0z/pptx-renderer)                             | Apache-2.0 | One slide at a time, slide thumbnails, previous and next, zoom and fit, find with highlight |
+| RTF      | [rtf.js](https://github.com/tbluemel/rtf.js)                                                   | MIT        | Formatted text and embedded WMF or EMF pictures                                             |
+| ODT, ODP | [@opendocument/odr-core](https://github.com/opendocument-app/OpenDocument.core/tree/main/wasm) | MPL-2.0    | Pages or slides one below another, zoom and fit, find with highlight                        |
+| XLSX     | [@silurus/ooxml](https://github.com/yukiyokotani/office-open-xml-viewer)                       | MIT        | Sheets with the viewer's own sheet tabs, zoom and 100%, find across sheets                  |
 
 - Keys in a presentation: left and right arrows, PageUp, PageDown, Home, End
-- Find in a presentation: Enter for the next match, Shift+Enter for the previous one
-- Links in a DOCX or RTF document: `http`, `https` and `mailto` links open in a new tab, `#` links scroll inside the document, any other link is disabled
+- Find in a PPTX, ODT, ODP or XLSX file: Enter for the next match, Shift+Enter for the previous one
+- Links in a DOCX, RTF, ODT or ODP document: `http`, `https` and `mailto` links open in a new tab, `#` links scroll inside the document, any other link is disabled; in an XLSX workbook the viewer opens `http`, `https`, `mailto` and `tel` links, and links without a scheme such as `other.xlsx` (resolved against the JupyterLab address), in a new tab, and ignores links with any other scheme
+- ODT and ODP pages run in a frame sandboxed with `allow-scripts` only, so neither the viewer's script nor the document can reach or navigate JupyterLab
 - Read-only: files are never modified
 - Each viewer library loads only when a file of its format is opened
 
@@ -38,6 +41,12 @@ The extension offers exactly what each viewer library offers, and adds no featur
 - DOCX pages break only at the page and section breaks written in the file, not where Word would flow text onto a new page, so a long section shows as one tall page
 - HTML that a DOCX embeds as an altChunk part is not shown, because docx-preview would run any script in it inside the JupyterLab page; a DOCX whose only content is such a part shows an empty page
 - Word documents and RTF files have no zoom, page counter or table of contents, because their viewers offer none; the browser's own find (Ctrl+F) searches their text
+- ODT pages break only at the page breaks written in the file, as DOCX pages do
+- An ODP presentation shows its slides one below another, with no thumbnails and no previous or next buttons, because its viewer offers neither
+- An XLSX workbook shows the formula results saved in the file and never recalculates; a file saved without results, for example one written by openpyxl, shows empty formula cells
+- Legacy `.xls` workbooks and OpenDocument spreadsheets (`.ods`) are not opened by this extension
+- The ODF and XLSX viewers add about 8 MB of JavaScript and WebAssembly to the package; each loads only when a file of its format is opened
+- `@opendocument/odr-core` is licensed under MPL-2.0 and bundled unmodified; its source code is at [OpenDocument.core](https://github.com/opendocument-app/OpenDocument.core)
 
 ## Requirements
 

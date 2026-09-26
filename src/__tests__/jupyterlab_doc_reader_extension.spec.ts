@@ -4,6 +4,7 @@
  */
 
 import { decodeBase64, guardLinks } from '../render';
+import { formatFindStatus } from '../viewer';
 
 describe('decodeBase64', () => {
   it('decodes base64 split over lines, as Jupyter server sends it', () => {
@@ -76,5 +77,19 @@ describe('guardLinks', () => {
     const host = render('<a href="#main">jump</a>');
     host.querySelector('a')!.click();
     expect(outside.scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
+describe('formatFindStatus', () => {
+  it('is empty before any search', () => {
+    expect(formatFindStatus('', 0, 0)).toBe('');
+  });
+
+  it('reports a search with no match', () => {
+    expect(formatFindStatus('zebra', 0, 0)).toBe('No matches');
+  });
+
+  it('counts the shown match from one', () => {
+    expect(formatFindStatus('zebra', 1, 4)).toBe('2 of 4');
   });
 });

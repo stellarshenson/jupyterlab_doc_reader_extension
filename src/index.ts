@@ -52,6 +52,32 @@ const FILE_TYPES = [
     mimeTypes: ['application/vnd.ms-powerpoint'],
     contentType: 'file',
     fileFormat: 'base64'
+  },
+  {
+    name: 'odt',
+    displayName: 'OpenDocument Text (ODT)',
+    extensions: ['.odt'],
+    mimeTypes: ['application/vnd.oasis.opendocument.text'],
+    contentType: 'file',
+    fileFormat: 'base64'
+  },
+  {
+    name: 'odp',
+    displayName: 'OpenDocument Presentation (ODP)',
+    extensions: ['.odp'],
+    mimeTypes: ['application/vnd.oasis.opendocument.presentation'],
+    contentType: 'file',
+    fileFormat: 'base64'
+  },
+  {
+    name: 'xlsx',
+    displayName: 'Excel Workbook (XLSX)',
+    extensions: ['.xlsx'],
+    mimeTypes: [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ],
+    contentType: 'file',
+    fileFormat: 'base64'
   }
 ];
 
@@ -60,7 +86,8 @@ const FILE_TYPES = [
  */
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab_doc_reader_extension:plugin',
-  description: 'Renders DOCX, PPTX and RTF documents in the browser',
+  description:
+    'Renders DOCX, PPTX, RTF, ODT, ODP and XLSX documents in the browser',
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
     console.log(

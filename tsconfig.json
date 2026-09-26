@@ -15,6 +15,11 @@
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
+    "paths": {
+      "@silurus/ooxml/xlsx": [
+        "./node_modules/@silurus/ooxml/dist/types/xlsx.d.ts"
+      ]
+    },
     "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,

@@ -3594,6 +3594,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@opendocument/odr-core@npm:^7.3.2":
+  version: 7.3.2
+  resolution: "@opendocument/odr-core@npm:7.3.2"
+  checksum: 1453e7ee9b501d23eb94d0cf0e2caadc89d30c1aa19d8942c8eaca29bdb2ea1972b5c087c21cc1f96ec82d9c5ab59a4114b0d4b3a962da84e86c5255661cb43a
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -3635,6 +3642,13 @@ __metadata:
   peerDependencies:
     react: ^16.14.0 || >=17
   checksum: 40bb315a6e0b2e635dd6998a1ce82ce9fda2c8f57206f952006abc80e48d54790fa4298b167c0fdbc28a5a278573dbdb5bc68ec1da99c49a6b6c45fc7b61cdf5
+  languageName: node
+  linkType: hard
+
+"@silurus/ooxml@npm:^0.88.0":
+  version: 0.88.0
+  resolution: "@silurus/ooxml@npm:0.88.0"
+  checksum: 85c857f666aef64cf91a2329829c76739ddb47f588d092ac801a680294f874dd27f13ac7f2a51dfd23b55784856e810798edb4582e3785cb4bec8e1e84b70689
   languageName: node
   linkType: hard
 
@@ -7396,6 +7410,8 @@ __metadata:
     "@lumino/messaging": ^2.0.0
     "@lumino/signaling": ^2.0.0
     "@lumino/widgets": ^2.9.0
+    "@opendocument/odr-core": ^7.3.2
+    "@silurus/ooxml": ^0.88.0
     "@types/jest": ^29.2.0
     "@types/json-schema": ^7.0.11
     "@types/react": ^18.0.26

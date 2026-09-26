@@ -4,16 +4,16 @@ import type {
   TextSearchResult
 } from '@aiden0z/pptx-renderer';
 import { ISignal, Signal } from '@lumino/signaling';
+import { IDocumentViewer, ZOOM_STEP, formatFindStatus } from './viewer';
 
 const THUMBNAIL_WIDTH = 120;
-const ZOOM_STEP = 25;
 
 /**
  * A PPTX deck shown one slide at a time by `@aiden0z/pptx-renderer`. Every
  * operation here is a call into the viewer: navigation, zoom, thumbnails and
  * search are its features, this class only wires them to the widget.
  */
-export class SlideDeck {
+export class SlideDeck implements IDocumentViewer {
   /**
    * Parse `bytes` and render the first slide into `host`
    */
@@ -79,13 +79,7 @@ export class SlideDeck {
    * Result of the last search: empty before any, else `k of m` or `No matches`
    */
   get findStatus(): string {
-    if (this._query === '') {
-      return '';
-    }
-    if (this._matches.length === 0) {
-      return 'No matches';
-    }
-    return `${this._match + 1} of ${this._matches.length}`;
+    return formatFindStatus(this._query, this._match, this._matches.length);
   }
 
   /**
@@ -99,13 +93,15 @@ export class SlideDeck {
    * Change the zoom by `steps` of 25 percent of the fitted width
    */
   async zoom(steps: number): Promise<void> {
-    await this._viewer.setZoom(this._viewer.zoomPercent + steps * ZOOM_STEP);
+    await this._viewer.setZoom(
+      this._viewer.zoomPercent + steps * ZOOM_STEP * 100
+    );
   }
 
   /**
-   * Fit the slide to the width of the panel
+   * Fit the slide to the width of the panel, the zoom it opened at
    */
-  async fit(): Promise<void> {
+  async resetZoom(): Promise<void> {
     await this._viewer.setZoom(100);
   }
 
