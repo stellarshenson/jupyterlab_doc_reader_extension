@@ -1440,7 +1440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.60.0":
+"@playwright/test@npm:^1.60.0, @playwright/test@npm:^1.63.0":
   version: 1.63.0
   resolution: "@playwright/test@npm:1.63.0"
   dependencies:
@@ -3144,7 +3144,7 @@ __metadata:
   resolution: "jupyterlab_doc_reader_extension-ui-tests@workspace:."
   dependencies:
     "@jupyterlab/galata": ^5.6.4
-    "@playwright/test": ^1.60.0
+    "@playwright/test": ^1.63.0
   languageName: unknown
   linkType: soft
 

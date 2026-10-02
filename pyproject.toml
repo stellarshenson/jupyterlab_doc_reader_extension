@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0", "hatch-nodejs-version>=0.3.2"]
+requires = ["hatchling>=1.32.0", "jupyterlab>=4.6.0,<5", "hatch-nodejs-version>=0.4.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -41,7 +41,7 @@ exclude = [".github", "binder"]
 path = "jupyterlab_doc_reader_extension/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
-dependencies = ["hatch-jupyter-builder>=0.5"]
+dependencies = ["hatch-jupyter-builder>=0.10.0"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
     "jupyterlab_doc_reader_extension/labextension/static/style.js",
@@ -64,7 +64,7 @@ version_cmd = "hatch version"
 
 [tool.jupyter-releaser.hooks]
 before-build-npm = [
-    "python -m pip install 'jupyterlab>=4.0.0,<5'",
+    "python -m pip install 'jupyterlab>=4.6.0,<5'",
     "jlpm",
     "jlpm build:prod"
 ]

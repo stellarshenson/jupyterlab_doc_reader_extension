@@ -14,5 +14,9 @@ configure_jupyter_server(c)
 # back to 8888, as playwright.config.js does
 c.ServerApp.port = int(os.environ.get("JUPYTER_TEST_PORT") or "8888")
 
+# Galata waits for the Launcher tab; the GalaxaHub message-of-the-day tab would
+# take its place. Ignored where that extension is not installed, as in CI
+c.GalaxaHubMotd.open_on_start = False
+
 # Uncomment to set server log level to debug level
 # c.ServerApp.log_level = "DEBUG"

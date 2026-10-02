@@ -18,9 +18,8 @@ export class SlideDeck implements IDocumentViewer {
    * Parse `bytes` and render the first slide into `host`
    */
   static async open(bytes: Uint8Array, host: HTMLElement): Promise<SlideDeck> {
-    const { PptxViewer, RECOMMENDED_ZIP_LIMITS } = await import(
-      '@aiden0z/pptx-renderer'
-    );
+    const { PptxViewer, RECOMMENDED_ZIP_LIMITS } =
+      await import('@aiden0z/pptx-renderer');
     const thumbnails = document.createElement('div');
     thumbnails.className = 'jp-DocReaderWidget-thumbnails';
     const stage = document.createElement('div');

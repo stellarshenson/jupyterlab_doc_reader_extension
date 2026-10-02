@@ -1,5 +1,13 @@
-# Makefile for Jupyterlab extensions version 1.43
+# Makefile for Jupyterlab extensions version 1.44
 # changelog:
+#   1.44 - check_dependencies reports pytest missing when the package has a tests/
+#          directory, and install_dependencies then installs the `test` extras that
+#          pyproject.toml lists. `test` has run pytest since 1.36 and `publish` runs
+#          `test` since 1.41, yet no target installed it: a dev env worked only where
+#          the image happened to ship pytest. Measured on 2026-09-30: a Python 3.14
+#          image answered "No module named pytest" after `make install` had reported
+#          success, so `test`, and with it `publish`, had no pytest to run.
+#          Frontend-only extensions (no tests/ directory) are unaffected.
 #   1.43 - the auth gate in `test` loads the source tree being released, not the wheel
 #          the last `make install` left in site-packages: `python script.py` puts only
 #          the script's own directory on sys.path, and `publish` runs `test` before
@@ -215,6 +223,7 @@ check_dependencies:
 	python -m build --version >/dev/null 2>&1 || MISSING="$$MISSING build"; \
 	command -v jlpm >/dev/null 2>&1 || MISSING="$$MISSING jlpm"; \
 	{ [ -d node_modules ] && [ -n "$$(ls -A node_modules 2>/dev/null)" ]; } || MISSING="$$MISSING node_modules"; \
+	{ [ ! -d "$(PYTHON_NAME)/tests" ] || python -m pytest --version >/dev/null 2>&1; } || MISSING="$$MISSING pytest"; \
 	if [ -n "$$MISSING" ]; then \
 		echo "Missing dependencies:$$MISSING"; \
 		echo "Installing missing dependencies..."; \
@@ -270,6 +279,11 @@ install_dependencies:
 	@if [ ! -d node_modules ] || [ -z "$$(ls -A node_modules 2>/dev/null)" ]; then \
 		echo "Installing project node_modules (jlpm install)..."; \
 		jlpm install; \
+	fi
+	@if [ -d "$(PYTHON_NAME)/tests" ] && ! python -m pytest --version >/dev/null 2>&1; then \
+		echo "Installing the test extras from pyproject.toml (pytest)..."; \
+		python -c "import tomllib; print('\n'.join(tomllib.load(open('pyproject.toml', 'rb')).get('project', {}).get('optional-dependencies', {}).get('test', [])))" \
+			| xargs -r -d '\n' pip install; \
 	fi
 	@for pkg in $(ALLOW_SCRIPTS_PKGS); do \
 		if $(NPM) install-scripts approve "$$pkg" >/dev/null 2>&1; then \
