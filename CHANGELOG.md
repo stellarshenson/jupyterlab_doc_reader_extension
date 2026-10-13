@@ -2,6 +2,14 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## [1.2.3] - 2026-10-13
+
+### Changed
+
+- No change to the extension since 1.2.2; this version publishes the same content again
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## [1.2.2] - 2026-10-13
 
 ### Added
@@ -11,8 +19,6 @@
 ### Changed
 
 - XLSX files carry the JupyterLab spreadsheet icon in the file browser where no other extension sets one
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## [1.2.1] - 2026-10-02
 
