@@ -185,6 +185,12 @@ Toolbar, errors and link handling shared by every format
   - log: 2026-09-26T18:36:39Z @kj added
   - log: 2026-09-26T19:08:41Z @kj edited text "an ODT, ODP or XLSX file the viewer cannot read shows the error panel with the viewer message" -> "an ODT, ODP or XLSX file the viewer cannot read shows the error panel with the reason; a file that is not a zip archive never opens as an empty workbook"
   - log: 2026-09-26T20:14:18Z @kj closed
+- [x] `ACC-VIEW-35` **Tab icon** - MEDIUM; the tab of an opened document shows the first icon registered for its file type that is not the generic file icon, else the generic file icon; the extension's own XLSX type carries the spreadsheet icon
+  - evidence: galata 23/23 on the rebuilt 1.2.1 wheel, 2026-10-13: 'shows an icon on the tab of every format' and 'uses the icon another extension registered for the file type' pass; both failed on the released 1.2.1 build (logs/tabicon-galata-before.log)
+  - test: open each of the 8 formats, assert its tab holds one icon; register a second .odt type with an icon, assert the .odt tab shows it
+  - test-tags: E2E
+  - log: 2026-10-13T16:41:45Z @kj added
+  - log: 2026-10-13T16:41:48Z @kj closed
 
 ## Rich Text `RTF`
 

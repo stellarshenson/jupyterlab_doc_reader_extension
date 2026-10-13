@@ -2,6 +2,18 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## [1.2.2] - 2026-10-13
+
+### Added
+
+- The tab of an opened document shows a file type icon: the icon another extension registered for the file type where one exists, for example a Word or PowerPoint icon, the spreadsheet icon for XLSX, otherwise the plain document icon
+
+### Changed
+
+- XLSX files carry the JupyterLab spreadsheet icon in the file browser where no other extension sets one
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## [1.2.1] - 2026-10-02
 
 ### Added
@@ -23,5 +35,3 @@
 ### Fixed
 
 - The isolated install test in CI runs on Python 3.13 with JupyterLab 4.6, which the extension requires
-
-<!-- <END NEW CHANGELOG ENTRY> -->

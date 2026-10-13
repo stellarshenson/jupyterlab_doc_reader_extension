@@ -3,6 +3,8 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
+import { fileIcon, spreadsheetIcon } from '@jupyterlab/ui-components';
+
 import { DocReaderFactory } from './widget';
 
 /**
@@ -77,7 +79,8 @@ const FILE_TYPES = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ],
     contentType: 'file',
-    fileFormat: 'base64'
+    fileFormat: 'base64',
+    icon: spreadsheetIcon
   }
 ];
 
@@ -103,7 +106,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
           name: fileType.name,
           displayName: fileType.displayName,
           extensions: fileType.extensions,
-          mimeTypes: fileType.mimeTypes
+          mimeTypes: fileType.mimeTypes,
+          icon: fileType.icon
         });
         console.log(`Registered file type: ${fileType.name}`);
       } catch (e) {
@@ -118,6 +122,19 @@ const plugin: JupyterFrontEndPlugin<void> = {
       fileTypes: FILE_TYPES.map(ft => ft.name),
       defaultFor: FILE_TYPES.map(ft => ft.name),
       readOnly: true
+    });
+
+    // JupyterLab sets no tab icon for a document widget. The tab takes the
+    // first icon registered for the file that is not the generic file icon,
+    // so the Word or PowerPoint icon of an installed icon extension is used
+    factory.widgetCreated.connect((sender, widget) => {
+      const types = docRegistry.getFileTypesForPath(widget.context.path);
+      const type = types.find(ft => ft.icon !== fileIcon) ?? types[0];
+      if (type) {
+        widget.title.icon = type.icon;
+        widget.title.iconClass = type.iconClass ?? '';
+        widget.title.iconLabel = type.iconLabel ?? '';
+      }
     });
 
     // Register the factory

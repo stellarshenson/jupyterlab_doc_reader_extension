@@ -402,3 +402,51 @@ test.describe('XLSX', () => {
     );
   });
 });
+
+test.describe('tab icon', () => {
+  const tabIcon = (page: IJupyterLabPageFixture, name: string) =>
+    page.activity.getTabLocator(name).locator('.lm-TabBar-tabIcon svg');
+
+  test('shows an icon on the tab of every format', async ({
+    page,
+    tmpPath
+  }) => {
+    for (const name of [
+      'sample.docx',
+      'legacy.doc',
+      'sample.rtf',
+      'sample.pptx',
+      'legacy.ppt',
+      'sample.odt',
+      'sample.odp',
+      'sample.xlsx'
+    ]) {
+      await open(page, tmpPath, name);
+      await expect(tabIcon(page, name)).toHaveCount(1);
+    }
+    await expect(tabIcon(page, 'sample.xlsx')).toHaveAttribute(
+      'data-icon',
+      'ui-components:spreadsheet'
+    );
+  });
+
+  test('uses the icon another extension registered for the file type', async ({
+    page,
+    tmpPath
+  }) => {
+    await page.evaluate(() => {
+      const registry = (window as any).jupyterapp.docRegistry;
+      registry.addFileType({
+        name: 'odt-with-icon',
+        extensions: ['.odt'],
+        icon: registry.getFileType('markdown').icon
+      });
+    });
+    await open(page, tmpPath, 'sample.odt');
+
+    await expect(tabIcon(page, 'sample.odt')).toHaveAttribute(
+      'data-icon',
+      'ui-components:markdown'
+    );
+  });
+});

@@ -32,6 +32,7 @@ The extension offers exactly what each viewer library offers, and adds no featur
 - Find in a PPTX, ODT, ODP or XLSX file: Enter for the next match, Shift+Enter for the previous one
 - Links in a DOCX, RTF, ODT or ODP document: `http`, `https` and `mailto` links open in a new tab, `#` links scroll inside the document, any other link is disabled; in an XLSX workbook the viewer opens `http`, `https`, `mailto` and `tel` links, and links without a scheme such as `other.xlsx` (resolved against the JupyterLab address), in a new tab, and ignores links with any other scheme
 - ODT and ODP pages run in a frame sandboxed with `allow-scripts` only, so neither the viewer's script nor the document can reach or navigate JupyterLab
+- The tab of an opened file shows an icon: the icon an installed icon extension registers for the file type, the JupyterLab spreadsheet icon for XLSX, otherwise the plain document icon
 - Read-only: files are never modified
 - Each viewer library loads only when a file of its format is opened
 
