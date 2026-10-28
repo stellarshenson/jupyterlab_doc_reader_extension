@@ -1,5 +1,23 @@
-# Makefile for Jupyterlab extensions version 1.44
+# Makefile for Jupyterlab extensions version 1.46
 # changelog:
+#   1.46 - increment_version also writes the new version into package-lock.json, in
+#          its top-level `version` and in `packages[""].version`, when the project
+#          has that file, and publish stages it in the metadata commit. 1.41 stopped
+#          writing package-lock.json but the projects kept the file, so the version
+#          recorded there stopped moving. Measured on 2026-10-14: 8 of 48 extensions
+#          with a package-lock.json recorded an older version there than in
+#          package.json, the oldest 1.2.31 against 1.2.73. The two values are replaced
+#          in the text, because 6 of the 48 lockfiles are indented with 4 spaces and a
+#          JSON rewrite would re-indent them. Requested on 2026-10-14.
+#   1.45 - `install` installs every optional-dependencies group of pyproject.toml
+#          with the wheel, so one `make install` leaves the runtime and the optional
+#          dependencies in place. Until now it installed the wheel alone, and the
+#          `dev` and `test` groups stayed as the image had them. Measured on
+#          2026-10-03: a rebuilt container had lost pytest, `make install` reported
+#          success twice, and `make publish` then stopped in `test` with "No module
+#          named '_pytest'". The optional groups are installed in a second pip run
+#          without --force-reinstall, so a build whose groups are already in place
+#          reinstalls none of them. Requested on 2026-10-03.
 #   1.44 - check_dependencies reports pytest missing when the package has a tests/
 #          directory, and install_dependencies then installs the `test` extras that
 #          pyproject.toml lists. `test` has run pytest since 1.36 and `publish` runs
@@ -156,6 +174,8 @@ PYTHON_NAME = $(shell $(NODE) -p "require('./package.json').jupyterlab.outputDir
 # "allowScripts". Space-separated; extend per project.
 ALLOW_SCRIPTS_PKGS := @fortawesome/fontawesome-free
 
+# package-lock.json is edited in place, not parsed and written back: a rewrite with a
+# fixed indent would re-indent every line of a lockfile that uses another indent.
 ## increment project version
 increment_version: check_dependencies
 	@CURRENT_VERSION="$(VERSION)"; \
@@ -170,6 +190,9 @@ increment_version: check_dependencies
 		echo "increment_version: package.json still reports $$CURRENT_VERSION - not bumped" >&2; \
 		exit 1; \
 	fi; \
+	if [ -f package-lock.json ]; then \
+		$(NODE) -e 'const fs = require("fs"), v = process.argv[1]; let n = 0; const s = fs.readFileSync("package-lock.json", "utf8").replace(/"version": "[^"]*"/g, (m) => (n++ < 2 ? `"version": "$${v}"` : m)); const d = JSON.parse(s); if (d.version !== v || d.packages[""].version !== v) { console.error("increment_version: the first two version fields of package-lock.json are not the package version - not bumped"); process.exit(1); } fs.writeFileSync("package-lock.json", s);' "$$NEW_VERSION" || exit 1; \
+	fi; \
 	echo "New version: $$NEW_VERSION"
 
 # `python -m build` is the whole build. Its hatch-jupyter-builder hook runs the
@@ -183,9 +206,19 @@ build: clean check_dependencies
 	jlpm prettier
 	python -m build
 
-## install package - raises the patch version first, so the build carries the new one
+# The wheel brings its runtime dependencies. The second pip run adds every
+# optional-dependencies group of pyproject.toml (`dev`, `test`, ...): pip sees the
+# wheel it has just installed, leaves it alone and installs only what a group still
+# lacks. It has no --force-reinstall, which would reinstall jupyterlab and its whole
+# dependency tree on every build. A pyproject.toml that cannot be read stops the target.
+## install package with its optional dependencies - raises the patch version first, so the build carries the new one
 install: increment_version build
 	pip install dist/*.whl --force-reinstall
+	@EXTRAS="$$(python -c "import tomllib; print(','.join(tomllib.load(open('pyproject.toml', 'rb')).get('project', {}).get('optional-dependencies', {})))")" || exit 1; \
+	if [ -n "$$EXTRAS" ]; then \
+		echo "Installing the optional dependencies [$$EXTRAS]..."; \
+		pip install "$$(ls dist/*.whl)[$$EXTRAS]"; \
+	fi
 
 ## run tests
 test: check_dependencies
@@ -242,7 +275,7 @@ publish: check_dependencies test install
 		echo "publish: dist/ holds no wheel or sdist - run make build first" >&2; \
 		exit 1; \
 	}
-	git add package.json yarn.lock
+	git add package.json yarn.lock $(wildcard package-lock.json)
 	git commit -m "chore: release $$($(NODE) -p "require('./package.json').version") package metadata"
 	git push
 	$(NPM) publish --access public

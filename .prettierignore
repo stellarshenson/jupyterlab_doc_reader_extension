@@ -7,3 +7,5 @@ jupyterlab_doc_reader_extension
 .claude
 docs/acc-crit.md
 docs/defects.md
+eslint.config.mjs
+.venv

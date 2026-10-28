@@ -1,11 +1,12 @@
 [build-system]
-requires = ["hatchling>=1.32.0", "jupyterlab>=4.6.0,<5", "hatch-nodejs-version>=0.4.0"]
+requires = ["hatchling>=1.5.0", "hatch-nodejs-version>=0.3.2", "jupyter-builder>=1.2.0,<2", "jupyterlab>=4.6.0,<5"]
 build-backend = "hatchling.build"
 
 [project]
 name = "jupyterlab_doc_reader_extension"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 classifiers = [
     "Framework :: Jupyter",
@@ -13,13 +14,13 @@ classifiers = [
     "Framework :: Jupyter :: JupyterLab :: 4",
     "Framework :: Jupyter :: JupyterLab :: Extensions",
     "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
-    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
@@ -64,6 +65,7 @@ version_cmd = "hatch version"
 
 [tool.jupyter-releaser.hooks]
 before-build-npm = [
+    "python -m pip install 'jupyter-builder>=1.2.0,<2'",
     "python -m pip install 'jupyterlab>=4.6.0,<5'",
     "jlpm",
     "jlpm build:prod"
