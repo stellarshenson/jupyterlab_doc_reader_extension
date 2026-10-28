@@ -187,6 +187,16 @@ test.describe('PPTX', () => {
     await expect.poll(width).toBeCloseTo(fitted, 0);
   });
 
+  test('toolbar buttons are momentary', async ({ page, tmpPath }) => {
+    await open(page, tmpPath, 'sample.pptx');
+
+    for (const title of ['Zoom in', 'Zoom out', 'Fit slide to width']) {
+      const button = page.getByTitle(title);
+      await button.click();
+      await expect(button).not.toHaveAttribute('aria-pressed', 'true');
+    }
+  });
+
   test('finds text on any slide and highlights it', async ({
     page,
     tmpPath

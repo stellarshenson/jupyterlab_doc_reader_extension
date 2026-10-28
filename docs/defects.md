@@ -25,6 +25,14 @@ Widget lifecycle, display elements and cleanup in `src/widget.ts`
   - log: 2026-09-26T15:39:42Z @kj added
   - log: 2026-09-26T16:10:58Z @kj edited test-tags added "UNIT, E2E"
   - log: 2026-09-26T16:10:58Z @kj closed
+- [x] `DEF-WIDGET-9-TOOLBAR` **Toolbar buttons look and stay pressed** - MINOR; toolbar buttons in every viewer look like toggles and keep a pressed frame after a click; momentary actions expected; cause: ToolbarButton toggles its own pressed flag on click; fix: reset pressed after the action; `src/widget.ts`
+  - evidence: Galata 'toolbar buttons are momentary' passes on build 1.2.4; 24/24 Galata and 14/14 Jest green; no aria-pressed true after Zoom in, Zoom out or Fit
+  - root-cause: 2026-10-28T23:11:47Z @kj ToolbarButton in @jupyterlab/apputils 4.6.4 toggles its own pressed flag on every click; the shared helper at src/widget.ts:284 uses it for every viewer control, so each click leaves a pressed frame; reset pressed after the action
+  - repro: open a DOCX, PPTX, XLSX, ODT or ODP file, look at -, +, Fit in the toolbar after a click
+  - test-tags: FUNCTIONAL
+  - log: 2026-10-28T23:10:23Z @kj added
+  - log: 2026-10-28T23:24:34Z @kj edited text "toolbar buttons in every viewer look like toggles and keep a pressed frame after a click; momentary actions expected; cause under investigation; `src/widget.ts`" -> "toolbar buttons in every viewer look like toggles and keep a pressed frame after a click; momentary actions expected; cause: ToolbarButton toggles its own pressed flag on click; fix: reset pressed after the action; `src/widget.ts`"
+  - log: 2026-10-28T23:24:34Z @kj closed: fixed: pressed reset in the shared addViewerToolbar helper
 
 ## DOCX rendering `DOCX`
 

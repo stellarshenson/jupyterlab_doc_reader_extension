@@ -279,19 +279,19 @@ function addViewerToolbar(
     options: ToolbarButtonComponent.IProps,
     action: (viewer: IDocumentViewer) => Promise<void>
   ) => {
-    toolbar.addItem(
-      name,
-      new ToolbarButton({
-        ...options,
-        // keep focus on the slide so the navigation keys keep working
-        noFocusOnClick: true,
-        onClick: () => {
-          if (content.viewer) {
-            void action(content.viewer);
-          }
+    const item = new ToolbarButton({
+      ...options,
+      // keep focus on the slide so the navigation keys keep working
+      noFocusOnClick: true,
+      onClick: () => {
+        // ToolbarButton toggles its own pressed flag; these actions are momentary
+        item.pressed = false;
+        if (content.viewer) {
+          void action(content.viewer);
         }
-      })
-    );
+      }
+    });
+    toolbar.addItem(name, item);
   };
   const position = new Widget({ node: document.createElement('span') });
   if (ext === '.pptx') {
