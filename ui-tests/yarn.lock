@@ -1885,6 +1885,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stellarshenson/jupyterlab-doc-reader-extension-ui-tests@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@stellarshenson/jupyterlab-doc-reader-extension-ui-tests@workspace:."
+  dependencies:
+    "@jupyterlab/galata": ^5.6.4
+    "@playwright/test": ^1.63.0
+  languageName: unknown
+  linkType: soft
+
 "@types/d3-array@npm:*":
   version: 3.2.2
   resolution: "@types/d3-array@npm:3.2.2"
@@ -3138,15 +3147,6 @@ __metadata:
   checksum: 0b40f712900ad0c846681ea2db23b6684b9d5eedf55807b4708c656f5894b63507d0e28ae10aa1bddbea551241035afe62b6df0800fc94c2e2806a7f3adecd7c
   languageName: node
   linkType: hard
-
-"jupyterlab_doc_reader_extension-ui-tests@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "jupyterlab_doc_reader_extension-ui-tests@workspace:."
-  dependencies:
-    "@jupyterlab/galata": ^5.6.4
-    "@playwright/test": ^1.63.0
-  languageName: unknown
-  linkType: soft
 
 "katex@npm:^0.16.47":
   version: 0.16.47

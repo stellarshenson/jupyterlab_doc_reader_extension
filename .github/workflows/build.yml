@@ -41,7 +41,7 @@ jobs:
         if jupyter server extension list 2>&1 | grep -i "jupyterlab_doc_reader_extension"; then exit 1; fi
 
         jupyter labextension list
-        jupyter labextension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"
+        jupyter labextension list 2>&1 | grep -ie "@stellarshenson/jupyterlab-doc-reader-extension.*OK"
         python -m jupyterlab.browser_check
 
     - name: Package the extension
@@ -86,7 +86,7 @@ jobs:
         if jupyter server extension list 2>&1 | grep -i "jupyterlab_doc_reader_extension"; then exit 1; fi
 
         jupyter labextension list
-        jupyter labextension list 2>&1 | grep -ie "jupyterlab_doc_reader_extension.*OK"
+        jupyter labextension list 2>&1 | grep -ie "@stellarshenson/jupyterlab-doc-reader-extension.*OK"
         python -m jupyterlab.browser_check --no-browser-test
 
   integration-tests:
@@ -157,4 +157,4 @@ jobs:
       - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
       - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
         with:
-          ignore_links: "https://www.npmjs.com/package/jupyterlab_doc_reader_extension"
+          ignore_links: "https://www.npmjs.com/package/@stellarshenson/jupyterlab-doc-reader-extension"

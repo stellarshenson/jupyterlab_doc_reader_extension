@@ -129,3 +129,6 @@ dmypy.json
 
 .nodeenv/
 tmp/
+
+# Run output
+junit.xml

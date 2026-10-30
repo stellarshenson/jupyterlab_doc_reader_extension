@@ -7,8 +7,8 @@ author_name: Stellars Henson
 has_ai_rules: false
 has_binder: false
 has_settings: false
-kind: frontend-and-server
-labextension_name: jupyterlab_doc_reader_extension
+kind: frontend
+labextension_name: '@stellarshenson/jupyterlab-doc-reader-extension'
 project_short_description: Jupyterlab extension that allows reading of the docx documents
 python_name: jupyterlab_doc_reader_extension
 repository: ''

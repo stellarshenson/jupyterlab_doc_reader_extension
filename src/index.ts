@@ -85,16 +85,16 @@ const FILE_TYPES = [
 ];
 
 /**
- * Initialization data for the jupyterlab_doc_reader_extension extension.
+ * Initialization data for the @stellarshenson/jupyterlab-doc-reader-extension extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab_doc_reader_extension:plugin',
+  id: '@stellarshenson/jupyterlab-doc-reader-extension:plugin',
   description:
     'Renders DOCX, PPTX, RTF, ODT, ODP and XLSX documents in the browser',
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
     console.log(
-      'JupyterLab extension jupyterlab_doc_reader_extension is activated!'
+      'JupyterLab extension @stellarshenson/jupyterlab-doc-reader-extension is activated!'
     );
 
     const { docRegistry } = app;

@@ -39,7 +39,7 @@ test.describe('activation', () => {
       logs.filter(
         s =>
           s ===
-          'JupyterLab extension jupyterlab_doc_reader_extension is activated!'
+          'JupyterLab extension @stellarshenson/jupyterlab-doc-reader-extension is activated!'
       )
     ).toHaveLength(1);
   });
@@ -52,8 +52,13 @@ test.describe('DOCX', () => {
   }) => {
     const calls: string[] = [];
     page.on('request', request => {
-      if (request.url().includes('jupyterlab-doc-reader-extension')) {
-        calls.push(request.url());
+      const url = request.url();
+      // The extension's own chunks carry the scoped name in their path
+      if (
+        url.includes('jupyterlab-doc-reader-extension') &&
+        !url.includes('/lab/extensions/')
+      ) {
+        calls.push(url);
       }
     });
     const widget = await open(page, tmpPath, 'sample.docx');
