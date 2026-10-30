@@ -2,6 +2,12 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## [1.2.8] - 2026-10-30
+
+### Fixed
+
+- Take the scoped @stellarshenson/jupyterlab-doc-reader-extension npm name
+
 ## [1.2.3] - 2026-10-13
 
 ### Changed
