@@ -1,33 +1,32 @@
 import js from '@eslint/js';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import jupyterPlugin from '@jupyter/eslint-plugin';
 
-export default [
+export default defineConfig([
   {
-    // only the TypeScript sources are linted
     ignores: [
       'node_modules',
       'dist',
       'coverage',
       '**/*.js',
       '**/*.d.ts',
-      '**/*.{js,jsx,mjs,cjs}',
+      '.venv',
       'tests',
       '**/__tests__',
       'ui-tests'
     ]
   },
   js.configs.recommended,
-  ...tsPlugin.configs['flat/recommended'],
+  tseslint.configs.recommended,
   {
     plugins: {
       jupyter: jupyterPlugin
     }
   },
-  ...jupyterPlugin.configs.recommended,
-  prettierRecommended,
+  jupyterPlugin.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -57,7 +56,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-use-before-define': 'off',
-      quotes: [
+      '@typescript-eslint/quotes': [
         'error',
         'single',
         { avoidEscape: true, allowTemplateLiterals: false }
@@ -66,5 +65,6 @@ export default [
       eqeqeq: 'error',
       'prefer-arrow-callback': 'error'
     }
-  }
-];
+  },
+  prettierRecommended
+]);
