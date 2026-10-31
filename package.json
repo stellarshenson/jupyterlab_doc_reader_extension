@@ -1,6 +1,6 @@
 {
     "name": "@stellarshenson/jupyterlab-doc-reader-extension",
-    "version": "1.2.8",
+    "version": "1.2.9",
     "description": "JupyterLab extension that allows reading of DOCX, PPTX, XLSX, ODT, ODP and RTF documents",
     "keywords": [
         "jupyter",
@@ -74,6 +74,7 @@
     "devDependencies": {
         "@eslint/js": "^10.0.0",
         "@jupyter/builder": "^1.2.3",
+        "@jupyter/eslint-plugin": "^1.1.0",
         "@jupyterlab/testutils": "^4.6.4",
         "@types/jest": "^29.5.0",
         "@types/json-schema": "^7.0.15",

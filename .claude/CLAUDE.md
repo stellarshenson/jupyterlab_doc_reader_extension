@@ -34,7 +34,7 @@ JupyterLab 4 extension for viewing Word (DOCX), PowerPoint (PPTX), Excel (XLSX),
 
 **Package Names**:
 
-- npm: `jupyterlab_doc_reader_extension`
+- npm: `@stellarshenson/jupyterlab-doc-reader-extension`
 - PyPI: `jupyterlab-doc-reader-extension`
 - GitHub: `stellarshenson/jupyterlab_doc_reader_extension`
 

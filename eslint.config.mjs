@@ -1,6 +1,8 @@
 import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import jupyterPlugin from '@jupyter/eslint-plugin';
 
 export default [
   {
@@ -9,6 +11,7 @@ export default [
       'node_modules',
       'dist',
       'coverage',
+      '**/*.js',
       '**/*.d.ts',
       '**/*.{js,jsx,mjs,cjs}',
       'tests',
@@ -18,10 +21,21 @@ export default [
   },
   js.configs.recommended,
   ...tsPlugin.configs['flat/recommended'],
+  {
+    plugins: {
+      jupyter: jupyterPlugin
+    }
+  },
+  ...jupyterPlugin.configs.recommended,
   prettierRecommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2015,
+        ...globals.node
+      },
       parserOptions: {
         project: 'tsconfig.json',
         sourceType: 'module'

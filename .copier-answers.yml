@@ -11,6 +11,6 @@ kind: frontend
 labextension_name: '@stellarshenson/jupyterlab-doc-reader-extension'
 project_short_description: Jupyterlab extension that allows reading of the docx documents
 python_name: jupyterlab_doc_reader_extension
-repository: ''
+repository: https://github.com/stellarshenson/jupyterlab_doc_reader_extension
 test: true
 
