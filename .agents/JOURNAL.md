@@ -59,3 +59,6 @@
 
 20. **Task - ESLint config of the template** (v1.2.11): replaced `eslint.config.mjs` with the file of the template v4.6.5<br>
     **Result**: The second audit found a local shape with no recorded reason. The template puts `prettierRecommended` last, and `eslint-config-prettier` then turns off `curly`, `quotes` and `prefer-arrow-callback`, which only this project still enforced. The other 54 projects already run this order, and the source breaks none of the three rules. `jlpm run lint:check` passes with 0 errors and 10 warnings. No shipped file changes, so this needs no release.
+
+21. **Task - Build lifecycle brought to Makefile 1.48** (v1.2.11): the canonical Makefile went to every extension on 2026-11-02<br>
+    **Result**: Took `Makefile` 1.48 verbatim, byte-identical to `@utils/jupyterlab-extensions/Makefile`, so every extension in the family builds and cleans the same way and the next upgrade is a single copy. `mrproper` now removes `tmp`, `logs`, `.venv`, `graphify-out`, `coverage` and `.pytest_cache` in addition to the build artifacts, clearing what agent runs leave behind; `install` and `publish` are `.NOTPARALLEL`, so the two targets cannot race. The cleaned tree carries the tag `CHECKPOINT_JUPYTERLAB_4.6.5_UPGRADE_PORTED_1.2.11`.
