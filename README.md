@@ -45,6 +45,7 @@ The extension offers exactly what each viewer library offers, and adds no featur
 - ODT pages break only at the page breaks written in the file, as DOCX pages do
 - An ODP presentation shows its slides one below another, with no thumbnails and no previous or next buttons, because its viewer offers neither
 - An XLSX workbook shows the formula results saved in the file and never recalculates; a file saved without results, for example one written by openpyxl, shows empty formula cells
+- An open viewer tab shows the file as it was when the tab opened; after the file changes on disk, close the tab and open the file again, because Reload from Disk does not render the file again
 - Legacy `.xls` workbooks and OpenDocument spreadsheets (`.ods`) are not opened by this extension
 - The ODF and XLSX viewers add about 8 MB of JavaScript and WebAssembly to the package; each loads only when a file of its format is opened
 - `@opendocument/odr-core` is licensed under MPL-2.0 and bundled unmodified; its source code is at [OpenDocument.core](https://github.com/opendocument-app/OpenDocument.core)

@@ -113,4 +113,11 @@ Text that describes the extension: plugin metadata, README, comments, trackers
   - root-cause: 2026-11-13T06:58:26Z @kj Usage was not updated when ODF and XLSX viewers were added
   - log: 2026-11-13T06:58:26Z @kj added
   - log: 2026-11-13T07:02:05Z @kj closed
+- [x] `DEF-DOCS-12-STALE-TAB` **README omits that an open tab is not refreshed** - MINOR; an open viewer tab keeps showing the old document after the file is rewritten on disk, and Reload from Disk does not render it again; README Caveats did not say so
+  - evidence: README Caveats states that an open tab shows the file as it was when opened and that Reload from Disk does not render it again
+  - repro: open a .docx, rewrite the file on disk, choose File, Reload from Disk: the tab shows the old content
+  - test-tags: MANUAL
+  - root-cause: 2026-11-13T07:24:43Z @kj the widget calls _load once in its constructor (src/widget.ts:73) and subscribes to no content or file change signal; a re-render is not built, so the limit is documented
+  - log: 2026-11-13T07:24:43Z @kj added
+  - log: 2026-11-13T07:24:49Z @kj closed
 
