@@ -2,6 +2,13 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## [1.2.14] - 2026-11-13
+
+### Changed
+
+- State that an open viewer tab is not refreshed
+- Remove the unused document model and file type fields
+
 ## [1.2.11] - 2026-10-31
 
 ### Changed
