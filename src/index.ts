@@ -17,25 +17,19 @@ const FILE_TYPES = [
     extensions: ['.docx'],
     mimeTypes: [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ],
-    contentType: 'file',
-    fileFormat: 'base64'
+    ]
   },
   {
     name: 'doc',
     displayName: 'Word Document (DOC)',
     extensions: ['.doc'],
-    mimeTypes: ['application/msword'],
-    contentType: 'file',
-    fileFormat: 'base64'
+    mimeTypes: ['application/msword']
   },
   {
     name: 'rtf',
     displayName: 'Rich Text Format',
     extensions: ['.rtf'],
-    mimeTypes: ['application/rtf', 'text/rtf'],
-    contentType: 'file',
-    fileFormat: 'base64'
+    mimeTypes: ['application/rtf', 'text/rtf']
   },
   {
     name: 'pptx',
@@ -43,33 +37,25 @@ const FILE_TYPES = [
     extensions: ['.pptx'],
     mimeTypes: [
       'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-    ],
-    contentType: 'file',
-    fileFormat: 'base64'
+    ]
   },
   {
     name: 'ppt',
     displayName: 'PowerPoint Presentation (PPT)',
     extensions: ['.ppt'],
-    mimeTypes: ['application/vnd.ms-powerpoint'],
-    contentType: 'file',
-    fileFormat: 'base64'
+    mimeTypes: ['application/vnd.ms-powerpoint']
   },
   {
     name: 'odt',
     displayName: 'OpenDocument Text (ODT)',
     extensions: ['.odt'],
-    mimeTypes: ['application/vnd.oasis.opendocument.text'],
-    contentType: 'file',
-    fileFormat: 'base64'
+    mimeTypes: ['application/vnd.oasis.opendocument.text']
   },
   {
     name: 'odp',
     displayName: 'OpenDocument Presentation (ODP)',
     extensions: ['.odp'],
-    mimeTypes: ['application/vnd.oasis.opendocument.presentation'],
-    contentType: 'file',
-    fileFormat: 'base64'
+    mimeTypes: ['application/vnd.oasis.opendocument.presentation']
   },
   {
     name: 'xlsx',
@@ -78,8 +64,6 @@ const FILE_TYPES = [
     mimeTypes: [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ],
-    contentType: 'file',
-    fileFormat: 'base64',
     icon: spreadsheetIcon
   }
 ];

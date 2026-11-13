@@ -33,6 +33,13 @@ Widget lifecycle, display elements and cleanup in `src/widget.ts`
   - log: 2026-10-28T23:10:23Z @kj added
   - log: 2026-10-28T23:24:34Z @kj edited text "toolbar buttons in every viewer look like toggles and keep a pressed frame after a click; momentary actions expected; cause under investigation; `src/widget.ts`" -> "toolbar buttons in every viewer look like toggles and keep a pressed frame after a click; momentary actions expected; cause: ToolbarButton toggles its own pressed flag on click; fix: reset pressed after the action; `src/widget.ts`"
   - log: 2026-10-28T23:24:34Z @kj closed: fixed: pressed reset in the shared addViewerToolbar helper
+- [x] `DEF-WIDGET-10-DEAD-CODE` **Unused model and file type fields** - MINOR; src/model.ts (DocModel, 102 lines) has no importer and its comment says content is not loaded, while the factory uses the base64 model; contentType and fileFormat in FILE_TYPES are never passed to addFileType; both ship in the npm src and mislead a maintainer
+  - evidence: src/model.ts removed, contentType and fileFormat removed from FILE_TYPES; build_test 2026-11-13: tsc clean, Jest 14, Galata 24 green
+  - repro: grep -rn 'DocModel\|fileFormat\|contentType' src
+  - test-tags: UNIT
+  - root-cause: 2026-11-13T06:58:26Z @kj left from the server-PDF design; the widget moved to the built-in base64 model and the leftovers stayed
+  - log: 2026-11-13T06:58:26Z @kj added
+  - log: 2026-11-13T07:02:05Z @kj closed
 
 ## DOCX rendering `DOCX`
 
@@ -99,4 +106,11 @@ Text that describes the extension: plugin metadata, README, comments, trackers
   - log: 2026-09-26T15:39:42Z @kj added
   - log: 2026-09-26T16:10:58Z @kj edited test-tags added "MANUAL"
   - log: 2026-09-26T16:10:58Z @kj closed
+- [x] `DEF-DOCS-11-USAGE` **README usage omits three formats** - MINOR; README Usage says to open a .docx, .pptx or .rtf file; .xlsx, .odt and .odp open too, so a reader of that section does not learn it
+  - evidence: README Usage lists .docx, .pptx, .xlsx, .odt, .odp and .rtf
+  - repro: read README.md section Usage
+  - test-tags: MANUAL
+  - root-cause: 2026-11-13T06:58:26Z @kj Usage was not updated when ODF and XLSX viewers were added
+  - log: 2026-11-13T06:58:26Z @kj added
+  - log: 2026-11-13T07:02:05Z @kj closed
 

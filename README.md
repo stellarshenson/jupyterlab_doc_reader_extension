@@ -62,7 +62,7 @@ pip install jupyterlab_doc_reader_extension
 
 ## Usage
 
-Open any `.docx`, `.pptx` or `.rtf` file from the JupyterLab file browser. The document opens in a read-only viewer tab.
+Open any `.docx`, `.pptx`, `.xlsx`, `.odt`, `.odp` or `.rtf` file from the JupyterLab file browser. The document opens in a read-only viewer tab.
 
 ## Uninstall
 
